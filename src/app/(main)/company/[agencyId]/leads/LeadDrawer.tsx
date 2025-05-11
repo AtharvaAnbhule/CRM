@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import Notes from "./Notes";
-import { useToast } from "@/app/(main)/CodeBuilder/components/ui/use-toast";
+import { useToast } from "@/app/(main)/Meeting/components/ui/use-toast";
+
 
 interface Lead {
   id: string;
