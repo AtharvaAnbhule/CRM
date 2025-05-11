@@ -45,14 +45,9 @@ import { getSubAccountWithContacts } from "@/queries/contacts";
 import Razorpay from "razorpay";
 import { getProducts } from "@/queries/products";
 import { getLeadDone } from "@/queries/Dealdone";
+import { getRazorpayInstance } from "@/components/razorpayintance";
 
-export function getRazorpayInstance(accountId?: string) {
-  return new Razorpay({
-    key_id: process.env.key_id!,
-    key_secret: process.env.key_secret!,
-    headers: accountId ? { "X-Razorpay-Account": accountId } : undefined,
-  });
-}
+
 
 const ChartComponent = dynamic(() => import("@/components/common/Graph"), { ssr: false });
 
