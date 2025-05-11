@@ -297,7 +297,7 @@ fetchEmployees() ;
             {/* Image Upload */}
             <FileUpload
               value={formData.image}
-              onChange={(uploadedUrl) => setFormData({ ...formData, image: uploadedUrl })}
+              onChange={(uploadedUrl) => setFormData({ ...formData, image: uploadedUrl || "" })}
               endpoint="media"
             /> 
             
