@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "../Meeting/components/ui/use-toast";
 
-
 export default function AgencyPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -92,39 +91,38 @@ export default function AgencyPage() {
             A full-service creative agency delivering custom web, design, marketing, and video solutions built for results.
           </p>
         </div>
-        {/* Leave the background image link blank */}
         <div className="rounded-xl overflow-hidden shadow-xl bg-violet-600 p-10 text-white text-center">
-          <h3 className="text-3xl font-semibold">Let’s Talk!</h3>
+          <h3 className="text-3xl font-semibold">Let&rsquo;s Talk!</h3>
           <p>Reach out to us and start your project today.</p>
         </div>
-      </motion.section> 
-      {/* Purchase Codebase CTA */}
-<motion.section
-  className="text-center space-y-4 max-w-xl mx-auto"
-  initial={{ opacity: 0, y: 30 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6 }}
-  viewport={{ once: true }}
->
-  <Card className="border border-violet-600">
-    <CardHeader>
-      <CardTitle className="text-violet-600">Purchase the Full Codebase</CardTitle>
-      <p className="text-muted-foreground text-sm">
-        Get started faster! This codebase includes auth, landing page, billing, and more – all ready to use.
-      </p>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div className="text-lg font-semibold text-foreground">Only ₹50</div>
-      <Button
-        className="w-full bg-violet-600 text-white hover:bg-violet-700"
-        onClick={() => window.open("https://buy.stripe.com/test_a1b2c3", "_blank")} // Replace with your real payment link
-      >
-        Fill in the details below in the form
-      </Button>
-    </CardContent>
-  </Card>
-</motion.section>
+      </motion.section>
 
+      {/* Purchase Codebase CTA */}
+      <motion.section
+        className="text-center space-y-4 max-w-xl mx-auto"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <Card className="border border-violet-600">
+          <CardHeader>
+            <CardTitle className="text-violet-600">Purchase the Full Codebase</CardTitle>
+            <p className="text-muted-foreground text-sm">
+              Get started faster! This codebase includes auth, landing page, billing, and more &ndash; all ready to use.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-lg font-semibold text-foreground">Only ₹50</div>
+            <Button
+              className="w-full bg-violet-600 text-white hover:bg-violet-700"
+              onClick={() => window.open("https://buy.stripe.com/test_a1b2c3", "_blank")}
+            >
+              Fill in the details below in the form
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.section>
 
       {/* Services Section */}
       <motion.section
@@ -151,7 +149,6 @@ export default function AgencyPage() {
               viewport={{ once: true }}
             >
               <Card className="hover:shadow-lg border border-muted transition duration-300">
-                {/* Leave the image link blank */}
                 <CardHeader>
                   <CardTitle className="text-violet-600">{service.title}</CardTitle>
                 </CardHeader>
@@ -174,12 +171,12 @@ export default function AgencyPage() {
         <h2 className="text-2xl font-semibold">What Our Clients Say</h2>
         <div className="space-y-6">
           <div className="border p-4 shadow-sm">
-            <p>"This agency helped us scale our business by providing innovative digital solutions. The team was fantastic!"</p>
-            <div className="mt-4 font-semibold">- Jane Doe, CEO of CompanyX</div>
+            <p>&quot;This agency helped us scale our business by providing innovative digital solutions. The team was fantastic!&quot;</p>
+            <div className="mt-4 font-semibold">&ndash; Jane Doe, CEO of CompanyX</div>
           </div>
           <div className="border p-4 shadow-sm">
-            <p>"Our website traffic and conversions increased after working with this amazing agency. Highly recommended!"</p>
-            <div className="mt-4 font-semibold">- John Smith, Marketing Director at CompanyY</div>
+            <p>&quot;Our website traffic and conversions increased after working with this amazing agency. Highly recommended!&quot;</p>
+            <div className="mt-4 font-semibold">&ndash; John Smith, Marketing Director at CompanyY</div>
           </div>
         </div>
       </motion.section>
@@ -193,9 +190,8 @@ export default function AgencyPage() {
       >
         <h2 className="text-2xl font-semibold">Trusted by over 100+ Brands</h2>
         <p className="text-muted-foreground">
-          We're proud to have worked with some amazing companies. Join them today and elevate your brand.
+          We&apos;re proud to have worked with some amazing companies. Join them today and elevate your brand.
         </p>
-        
       </motion.section>
 
       {/* Contact Form Section */}
@@ -210,7 +206,7 @@ export default function AgencyPage() {
           <CardHeader>
             <CardTitle>Contact Us</CardTitle>
             <p className="text-muted-foreground text-sm">
-              Send us a message and we’ll respond within 24 hours.
+              Send us a message and we&rsquo;ll respond within 24 hours.
             </p>
           </CardHeader>
           <CardContent>

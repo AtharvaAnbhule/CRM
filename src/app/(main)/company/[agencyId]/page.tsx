@@ -215,7 +215,7 @@ const AgencyIdPage: React.FC<AgencyIdPageProps> = async ({ params }) => {
             <CardHeader>
               <CardTitle>Target Milestones</CardTitle>
               <CardDescription>
-                <p className="mt-2">Visual progress of your organization's expansion goal.</p>
+                <p className="mt-2">Visual progress of your organizations expansion goal.</p>
               </CardDescription>
             </CardHeader>
             <CardFooter>

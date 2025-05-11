@@ -42,7 +42,7 @@ const CompanySettingsPage: React.FC<AgencySettingsPageProps> = async ({
             Company Settings
           </h1>
           <p className="mt-3 text-lg text-zinc-600 dark:text-zinc-400">
-            Manage your company's profile and admin preferences.
+            Manage your companys profile and admin preferences.
           </p>
         </header>
 

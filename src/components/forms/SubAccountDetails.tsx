@@ -111,7 +111,7 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
       ✨ Account Setup ✨
 </CardTitle>
   < CardDescription className = "text-gray-500" >
-    Let's configure your account with the best details. 🚀
+    Lets configure your account with the best details. 🚀
       </CardDescription>
       </CardHeader>
       < CardContent >

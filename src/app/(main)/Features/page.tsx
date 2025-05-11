@@ -39,15 +39,15 @@ export default function FeaturesPage() {
         </section>
 
         <div className="mt-20 text-center">
-          <h2 className="text-3xl font-semibold mb-4 font-serif">Built for Modern Teams & Growing Businesses</h2>
+          <h2 className="text-3xl font-semibold mb-4 font-serif">Built for Modern Teams &amp; Growing Businesses</h2>
           <p className="text-md font-light max-w-4xl mx-auto">
-            Our CRM is an all-in-one platform built to simplify team collaboration, increase productivity, and maximize customer satisfaction. With robust features tailored for dynamic teams and enterprises, you can automate complex workflows, track every customer interaction, build internal tools with our visual builder, and scale your operations effortlessly. Whether you're a startup or an enterprise, our CRM evolves with your needs.
+            Our CRM is an all-in-one platform built to simplify team collaboration, increase productivity, and maximize customer satisfaction. With robust features tailored for dynamic teams and enterprises, you can automate complex workflows, track every customer interaction, build internal tools with our visual builder, and scale your operations effortlessly. Whether you&apos;re a startup or an enterprise, our CRM evolves with your needs.
           </p>
           <p className="text-md font-light max-w-4xl mx-auto mt-4">
-            Whether it's managing thousands of leads from multi-channel campaigns or optimizing team output through detailed analytics, every feature in our CRM is built with scale, security, and performance in mind. With extensive integrations, customizable modules, and intelligent automation, our platform empowers your team to stay ahead of the competition. Gain 360° visibility, optimize revenue, and drive growth like never before.
+            Whether it&apos;s managing thousands of leads from multi-channel campaigns or optimizing team output through detailed analytics, every feature in our CRM is built with scale, security, and performance in mind. With extensive integrations, customizable modules, and intelligent automation, our platform empowers your team to stay ahead of the competition. Gain 360&deg; visibility, optimize revenue, and drive growth like never before.
           </p>
           <p className="text-md font-light max-w-4xl mx-auto mt-4">
-            Empower every team — sales, marketing, HR, support, and finance — with purpose-built tools designed for synergy. Dive deep into lead journeys, set up task dependencies, visualize data with intuitive dashboards, or draft proposals collaboratively. Your CRM is no longer just a database; it's your competitive edge, built to adapt and grow with your vision.
+            Empower every team — sales, marketing, HR, support, and finance — with purpose-built tools designed for synergy. Dive deep into lead journeys, set up task dependencies, visualize data with intuitive dashboards, or draft proposals collaboratively. Your CRM is no longer just a database; it&apos;s your competitive edge, built to adapt and grow with your vision.
           </p>
         </div>
       </div>
@@ -55,6 +55,7 @@ export default function FeaturesPage() {
   );
 }
 
+// You don't need to escape apostrophes here (inside JS objects)
 const features = [
   {
     title: "Team Building",

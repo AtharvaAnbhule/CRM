@@ -129,7 +129,7 @@ const agencyId = pathParts[2]; // assuming the URL is /company/<agencyId>/billin
           <CardHeader>
             <CardTitle className="my-4">Continue</CardTitle>
             <CardDescription>
-              By clicking on pay you'll purchase your plan subscription of Rs{" "}
+              By clicking on pay you purchase your plan subscription of Rs{" "}
               {amount}/month
             </CardDescription>
           </CardHeader>

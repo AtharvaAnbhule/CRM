@@ -62,6 +62,7 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
   user,
   defaultOpen,
 }) => {
+    const router = useRouter();
   const [isMounted, setIsMounted] = React.useState<boolean>(false);
   const { setOpen } = useModal();
   const pathname = usePathname();
@@ -80,7 +81,7 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
   const isOwnerOrAdmin =
     user.role === Role.AGENCY_ADMIN || user.role === Role.AGENCY_OWNER;
 
-  const router = useRouter();
+
   return (
     <Sheet modal= {false} open = {defaultOpen? true: undefined}  >
       <SheetTrigger
