@@ -33,6 +33,8 @@ interface Bug {
 
 
 
+
+
 export default function Projects() {
 
 const pathname = usePathname();

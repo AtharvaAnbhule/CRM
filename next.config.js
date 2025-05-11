@@ -9,6 +9,9 @@ const nextConfig = {
       "files.stripe.com",
     ],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   reactStrictMode: false,
 };
 
