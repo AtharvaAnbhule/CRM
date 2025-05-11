@@ -10,6 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.3.22",
     "@clerk/nextjs": "^4.29.7",
     "@clerk/themes": "^1.7.9",
     "@codemirror/commands": "^6.8.1",
@@ -87,6 +88,7 @@
     "nextjs-toploader": "^3.8.16",
     "nodemailer": "^6.10.1",
     "number-to-words": "^1.2.4",
+    "openai": "^4.98.0",
     "razorpay": "^2.9.6",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",

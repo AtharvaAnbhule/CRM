@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AreaChart } from "@/components/ui/chart";
+import { AreaChart } from "@/components/ui/area-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AreaChartComponentProps {
