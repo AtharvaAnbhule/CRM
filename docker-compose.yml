@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://neondb_owner:npg_FWKg86OVSNZu@ep-young-thunder-a4aze8jv-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
