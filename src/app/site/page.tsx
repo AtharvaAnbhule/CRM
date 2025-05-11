@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
           </div>
           
           <p className="text-neutral-300 text-lg max-w-lg mx-auto mt-6">
-            Experience seamless agency management with Workeloo CRM. Get started now and unlock powerful features.
+            Experience seamless Company management with Workeloo CRM. Get started now and unlock powerful features.
           </p>
         </div>
       </div>

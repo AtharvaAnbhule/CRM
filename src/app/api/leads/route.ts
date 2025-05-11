@@ -10,8 +10,8 @@ export async function POST(req: Request) {
     }
 
     const lead = await db.lead.create({
-        //@ts-ignore
-      data: { name, email, phone  , message , Category},
+        
+      data: { name, email, phone  , message , Category , agencyId:""},
     });
 
     return NextResponse.json({ message: "Lead captured successfully!", lead });
