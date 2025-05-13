@@ -57,26 +57,32 @@ const Sidebar: React.FC<SidebarProps> = async ({ id, type }) => {
   );
 
   return (
-    <div className="w-[500px]">
-    <MenuOptions
-        defaultOpen={false}
-        details={details}
-        id={id}
-        sideBarLogo={sideBarLogo}
-        sideBarOptions={sidebarOptions}
-        subAccount={subAccounts}
-        user={user}
-      />
-      <MenuOptions
-        defaultOpen
-        details={details}
-        id={id}
-        sideBarLogo={sideBarLogo}
-        sideBarOptions={sidebarOptions}
-        subAccount={subAccounts}
-        user={user}
-      />
-      
+     <div className="w-full">
+      {/* Mobile Sidebar */}
+      <div className="block md:hidden">
+        <MenuOptions
+          defaultOpen={false}
+          details={details}
+          id={id}
+          sideBarLogo={sideBarLogo}
+          sideBarOptions={sidebarOptions}
+          subAccount={subAccounts}
+          user={user}
+        />
+      </div>
+
+      {/* Desktop / Tablet Sidebar */}
+      <div className="hidden md:block">
+        <MenuOptions
+          defaultOpen
+          details={details}
+          id={id}
+          sideBarLogo={sideBarLogo}
+          sideBarOptions={sidebarOptions}
+          subAccount={subAccounts}
+          user={user}
+        />
+      </div>
     </div>
   );
 };

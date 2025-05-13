@@ -2,7 +2,7 @@ import CallList from "../../../components/call-list";
 
 export default function Recordings() {
   return (
-    <section className="flex size-full flex-col gap-10 text-white">
+    <section className="flex size-full flex-col gap-10 dark:text-white">
       <h1 className="text-3xl font-bold">Recordings</h1>
 
       <CallList type="recordings" />

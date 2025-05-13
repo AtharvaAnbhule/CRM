@@ -14,7 +14,7 @@ import { redirect, useRouter } from "next/navigation";
 
 const Navigation = async () => {
   const user = await currentUser();
-
+  
 
   return (
     <>

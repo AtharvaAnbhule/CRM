@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
-import { Send, Bot, MessageSquare, X } from 'lucide-react';
+import { Send, MessageSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -20,6 +20,8 @@ const Chatbot = () => {
   const [userInput, setUserInput] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [userEmail, setUserEmail] = useState(''); // For user email collection
 
   const handleSend = () => {
     if (userInput.trim() === '') return;
@@ -33,16 +35,49 @@ const Chatbot = () => {
       setCurrentQuestionIndex(nextQuestionIndex);
     } else {
       newChat.push({ sender: 'bot', text: "Thank you for the information. We'll get back to you soon!" });
+
+      // Collect all answers
+      const userAnswers = questions.map((question, index) => ({
+        question,
+        response: chat[index + 1]?.text || "No response",
+      }));
+      //@ts-ignore
+      setAnswers(userAnswers);
+
+      // Send email with answers to backend
+      sendEmail(userAnswers);
     }
 
     setChat(newChat);
+  };
+
+  const sendEmail = async (userAnswers: any) => {
+    try {
+      const response = await fetch('/api/sendEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          answers: userAnswers,
+          userEmail, // You can also collect this email in the chatbot
+        }),
+      });
+
+      const data = await response.json();
+      if (data.message) {
+        console.log('Email sent successfully');
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
   };
 
   return (
     <div>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className=" fixed bottom-2 right-4 bg-purple-500 p-3 rounded-lg shadow-lg dark:bg-black  text-white"
+        className="fixed bottom-2 right-4 bg-purple-500 p-3 rounded-lg shadow-lg dark:bg-black text-white"
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
       </Button>
@@ -56,7 +91,7 @@ const Chatbot = () => {
 
           <div className="flex-1 overflow-y-auto mb-4" style={{ height: '70%' }}>
             {chat.map((item, index) => (
-              <div key={index} className={`mb-2 ${item.sender === 'bot' ? 'text-left' : 'text-right'}`}> 
+              <div key={index} className={`mb-2 ${item.sender === 'bot' ? 'text-left' : 'text-right'}`}>
                 <p className={`inline-block px-4 py-2 rounded-lg ${item.sender === 'bot' ? 'dark:bg-black-200' : 'bg-purple-500 text-white'}`}>{item.text}</p>
               </div>
             ))}

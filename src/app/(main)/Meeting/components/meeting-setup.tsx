@@ -23,7 +23,7 @@ const MeetingSetup = ({ setIsSetupComplete }: { setIsSetupComplete: (value: bool
   }, [isMicCamToggledOn, call?.camera, call?.microphone]);
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-white">
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-3 dark:text-white">
       <h1 className="text-2xl font-bold">Setup</h1>
       <VideoPreview />
 
@@ -34,7 +34,7 @@ const MeetingSetup = ({ setIsSetupComplete }: { setIsSetupComplete: (value: bool
             checked={isMicCamToggledOn}
             onChange={e => setIsMicCamToggledOn(e.target.checked)}
           />
-          <span>Join with camera and microphone</span>
+          <span >Join with camera and microphone</span>
         </label>
         <DeviceSettings />
       </div>

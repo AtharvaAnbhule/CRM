@@ -300,6 +300,7 @@ const LeadTable: React.FC = () => {
       <LeadDrawer
         isOpen={isDrawerOpen}
         onClose={() => setDrawerOpen(false)}
+        //@ts-ignore
         lead={selectedLead}
       />
     </div>

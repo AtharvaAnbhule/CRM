@@ -86,11 +86,11 @@ const PipelineInfoBar: React.FC<PipelineInfoBarProps> = ({
                         setValue(currentValue);
                         setIsOpen(false);
                       }}
-                      className="cursor-pointer aria-selected:bg-primary"
+                      className="cursor-pointer aria-selected:bg-primary text-black "
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4 dark:text-white dark:hover:text-white",
+                          "mr-2 h-4 w-4 text-black dark:text-white dark:hover:text-white",
                           value === pipeline.id ? "opacity-100" : "opacity-0"
                         )}
                       />

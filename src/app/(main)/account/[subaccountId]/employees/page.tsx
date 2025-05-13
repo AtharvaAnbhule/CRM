@@ -35,7 +35,7 @@ export default function EmployeeApp() {
 
   const [employees, setEmployees] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(false); 
   const [query, setQuery] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editEmployee, setEditEmployee] = useState(null); 

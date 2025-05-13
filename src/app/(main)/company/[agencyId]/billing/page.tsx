@@ -248,7 +248,7 @@ export default function Page() {
           title: data?.title || "Starter",
           price: data?.price || 0,
           description: data?.description || "Your current subscription plan.",
-          dateTaken: data?.createdAt || new Date().toISOString(),
+          dateTaken: data?.updatedAt || new Date().toISOString(),
         });
       } catch (err) {
         console.error("Error fetching subscription", err);
@@ -266,20 +266,22 @@ export default function Page() {
       price: 300,
       description: "Essential features you need to get started",
       features: [
-        "Full CRM Management",
-        "Full time Support from the Team Workeloo",
-        "Unlimited Accounts",
+        "Comprehensive CRM Management",
+
+"Dedicated Full-Time Support from the Workeloo Team",
+
+"Unlimited User Accounts",
       ],
       actionLabel: "Get Basic",
     },
     {
       title: "Pro",
-      price: 5999,
+      price: 1000,
       description: "Perfect for owners of small & medium businesses",
       features: [
         "Team Workeloo will work along you for betterment of your company",
         "Full Support from Team Workeloo for Marketing,Management,Development of products",
-        "UNlimited use of CRM Platform",
+        "Unlimited use of CRM Platform",
       ],
       actionLabel: "Get Pro",
     },

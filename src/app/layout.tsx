@@ -1,14 +1,14 @@
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ModalProvider } from "@/components/providers/ModalProvider";
 
-import { DM_Sans } from "next/font/google";
-import { DM_Mono } from "next/font/google";
+import { DM_Sans, DM_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 import "./globals.css";
 import { Toaster } from "sonner";
 import Chatbot from "@/components/common/Chatbot";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Workeloo",
@@ -28,25 +28,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
-      <body
-        className={cn(
-          "relative h-full font-sans antialiased min-h-screen",
-          fontSans.variable,
-          fontMono.variable
-        )}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+    
+      <html lang="en" className="h-full" suppressHydrationWarning>
+        <body
+          className={cn(
+            "relative h-full font-sans antialiased min-h-screen",
+            fontSans.variable,
+            fontMono.variable
+          )}
         >
-          <ModalProvider>{children}</ModalProvider>
-          <Chatbot />
-        </ThemeProvider>
-        <Toaster richColors />
-      </body>
-    </html>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <ModalProvider>
+              {children}
+            </ModalProvider>
+            <Chatbot />
+            <Toaster richColors />
+          </ThemeProvider>
+        </body>
+      </html>
+
   );
 }

@@ -22,7 +22,7 @@ export const PRICING: PricingItem[] = [
   {
     title: "Unlimited Saas",
     description: "The ultimate agency kit",
-    price: "Rs 5999",
+    price: "Rs 1000",
     duration: "month",
     highlight: "Key features",
     features: ["Everything in Starter and Basic", "Rebilling", "24/7 Support team","Full Etablishment of Company","Help in Marketing,Development,Manage Finances etc..."],
