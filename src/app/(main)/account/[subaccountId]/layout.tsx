@@ -61,7 +61,7 @@ const SubAccountIdLayout: React.FC<SubAccountIdLayoutProps> = async ({
   }
 
   return (
-    <div className= "h-screen overflow-hidden" >
+    <div className= "h-screen overflow-y-auto" >
     <Sidebar id={ subaccountId } type = "subaccount" />
 
       <div className="md:pl-[300px]" >

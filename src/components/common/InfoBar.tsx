@@ -79,13 +79,17 @@ const router = useRouter() ;
   return (
     <>
     <div className= { cn("fixed z-[20] md:left-[300px] left-0 right-0 top-0 p-4 bg-background/1000 backdrop-blur-md flex gap-4 items-center border-b-[1px]", className) } >
-    <UserButton afterSignOutUrl="/" />
+   
+    
+
     <div className="flex items-center gap-2 ml-auto" >
       
         <Sheet>
+        <UserButton afterSignOutUrl="/" />
         <Button size="icon" className = "rounded-full w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-80 transition" onClick={()=>router.push("/Extra")}>
         <FileText aria-label="Notifications" className = "w-4 h-4 text-white" />
           </Button>
+
         <SheetTrigger asChild >
       
         <Button size="icon" className = "rounded-full w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-80 transition" >

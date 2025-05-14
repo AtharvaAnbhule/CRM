@@ -346,7 +346,7 @@ const insertShape = (type: string) => {
           </div>
   
           {/* Input */}
-          <div className="flex items-center mt-2">
+          <div className="flex items-center mt-2 mb-6">
             <input
               type="text"
               className="flex-1 p-2 border rounded-lg bg-background text-foreground"

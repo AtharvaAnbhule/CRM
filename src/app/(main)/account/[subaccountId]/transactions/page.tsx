@@ -214,193 +214,27 @@ export default function TransactionsPage() {
   }));
 
   return (
-    <div className="p-20 max-w-5xl mx-auto space-y-6 ">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 overflow-auto">
-        <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
-        <div className="flex items-center gap-2">
-          <Input type="file" accept=".csv,.json" onChange={handleImport} />
-          <Button variant="outline" onClick={handleDownload}>
-            Download
+    <div className="p-4 sm:p-8 md:p-10 lg:p-16 max-w-7xl mx-auto space-y-6 overflow-y-auto">
+  {/* Header and Controls */}
+  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
+    <div className="flex flex-wrap gap-2 items-center">
+      <Input type="file" accept=".csv,.json" onChange={handleImport} />
+      <Button variant="outline" onClick={handleDownload}>
+        Download
+      </Button>
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogTrigger asChild>
+          <Button onClick={() => resetForm()} className="rounded-xl">
+            + Add Transaction
           </Button>
-          <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => resetForm()} className="rounded-xl">
-                + Add Transaction
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Transaction</DialogTitle>
-              </DialogHeader>
-              <Card className="p-4 space-y-4">
-                <Input
-                  placeholder="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-                <Input
-                  placeholder="Amount"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full border border-input bg-background px-3 py-2 rounded-md text-sm"
-                >
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
-                <Button onClick={handleCreate} className="w-full">
-                  Create
-                </Button>
-              </Card>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Summary Card */}
-      <Card className="p-6 rounded-xl shadow bg-muted text-foreground flex justify-between items-center font-semibold text-lg">
-        <div>
-          💰 Income:{" "}
-          <span className="text-green-600">${totalIncome.toFixed(2)}</span>
-        </div>
-        <div>
-          💸 Expense:{" "}
-          <span className="text-red-600">${totalExpense.toFixed(2)}</span>
-        </div>
-      </Card>
-
-      {/* Activity Bar Graph */}
-      <Card className="p-6">
-  <h2 className="text-xl font-semibold mb-4">Transaction Scatter Plot</h2>
-  <ResponsiveContainer width="100%" height={300}>
-    <ScatterChart>
-      <XAxis
-        type="number"
-        dataKey="index"
-        name="Index"
-        label={{ value: "Transaction", position: "insideBottom", offset: -5 }}
-      />
-      <YAxis
-        type="number"
-        dataKey="amount"
-        name="Amount"
-        label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }}
-      />
-      <Tooltip
-        cursor={{ strokeDasharray: "3 3" }}
-        formatter={(value: any) => `$${value}`}
-        labelFormatter={() => ""}
-      />
-      <Scatter
-        name="Income"
-        data={transactions
-          .map((t, i) => ({ ...t, index: i }))
-          .filter((t) => t.type === "income")}
-        fill="#22c55e"
-      />
-      <Scatter
-        name="Expense"
-        data={transactions
-          .map((t, i) => ({ ...t, index: i }))
-          .filter((t) => t.type === "expense")}
-        fill="#ef4444"
-      />
-    </ScatterChart>
-  </ResponsiveContainer>
-</Card>
-
-
-      <Card className="overflow-auto" style={{ maxHeight: '400px' }}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Title</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((txn) => (
-              <TableRow key={txn.id}>
-                <TableCell>{txn.title}</TableCell>
-                <TableCell>${txn.amount.toFixed(2)}</TableCell>
-                <TableCell className="capitalize">{txn.type}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setEditId(txn.id);
-                      setTitle(txn.title);
-                      setAmount(txn.amount.toString());
-                      setType(txn.type);
-                      setEditModalOpen(true);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(txn.id)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-      <Card className="p-6">
-  <h2 className="text-xl font-semibold mb-4">Transaction Line Chart</h2>
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart
-      data={transactions.map((t, i) => ({ ...t, index: i }))}
-      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-    >
-      <XAxis dataKey="index" label={{ value: "Transaction", position: "insideBottom", offset: -5 }} />
-      <YAxis label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }} />
-      <Tooltip formatter={(value: any) => `$${value}`} labelFormatter={() => ""} />
-      <Legend />
-      <Line
-        type="monotone"
-        dataKey="amount"
-        data={transactions.filter((t) => t.type === "income").map((t, i) => ({ ...t, index: i }))}
-        stroke="#22c55e"
-        name="Income"
-        dot
-      />
-      <Line
-        type="monotone"
-        dataKey="amount"
-        data={transactions.filter((t) => t.type === "expense").map((t, i) => ({ ...t, index: i }))}
-        stroke="#ef4444"
-        name="Expense"
-        dot
-      />
-    </LineChart>
-  </ResponsiveContainer>
-</Card>
-
-
-      {/* Edit Modal */}
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent>
+        </DialogTrigger>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Transaction</DialogTitle>
+            <DialogTitle>Add Transaction</DialogTitle>
           </DialogHeader>
           <Card className="p-4 space-y-4">
-            <Input
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <Input
               placeholder="Amount"
               type="number"
@@ -415,12 +249,172 @@ export default function TransactionsPage() {
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <Button onClick={handleUpdate} className="w-full">
-              Update
+            <Button onClick={handleCreate} className="w-full">
+              Create
             </Button>
           </Card>
         </DialogContent>
       </Dialog>
     </div>
+  </div>
+
+  {/* Summary */}
+  <Card className="p-6 rounded-xl shadow bg-muted text-foreground flex flex-wrap justify-between items-center font-semibold text-lg gap-4">
+    <div>
+      💰 Income: <span className="text-green-600">${totalIncome.toFixed(2)}</span>
+    </div>
+    <div>
+      💸 Expense: <span className="text-red-600">${totalExpense.toFixed(2)}</span>
+    </div>
+  </Card>
+
+  {/* Scatter Plot */}
+  <Card className="p-6 overflow-x-auto rounded-xl">
+    <h2 className="text-xl font-semibold mb-4">Transaction Scatter Plot</h2>
+    <div className="min-w-[600px] h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart>
+          <XAxis
+            type="number"
+            dataKey="index"
+            name="Index"
+            label={{ value: "Transaction", position: "insideBottom", offset: -5 }}
+          />
+          <YAxis
+            type="number"
+            dataKey="amount"
+            name="Amount"
+            label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }}
+          />
+          <Tooltip
+            cursor={{ strokeDasharray: "3 3" }}
+            formatter={(value) => `$${value}`}
+            labelFormatter={() => ""}
+          />
+          <Scatter
+            name="Income"
+            data={transactions.map((t, i) => ({ ...t, index: i })).filter((t) => t.type === "income")}
+            fill="#22c55e"
+          />
+          <Scatter
+            name="Expense"
+            data={transactions.map((t, i) => ({ ...t, index: i })).filter((t) => t.type === "expense")}
+            fill="#ef4444"
+          />
+        </ScatterChart>
+      </ResponsiveContainer>
+    </div>
+  </Card>
+
+  {/* Table */}
+  <Card className="rounded-xl overflow-auto max-h-[400px]">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[200px]">Title</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {transactions.map((txn) => (
+          <TableRow key={txn.id}>
+            <TableCell>{txn.title}</TableCell>
+            <TableCell>${txn.amount.toFixed(2)}</TableCell>
+            <TableCell className="capitalize">{txn.type}</TableCell>
+            <TableCell className="text-right space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setEditId(txn.id);
+                  setTitle(txn.title);
+                  setAmount(txn.amount.toString());
+                  setType(txn.type);
+                  setEditModalOpen(true);
+                }}
+              >
+                Edit
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => handleDelete(txn.id)}>
+                Delete
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </Card>
+
+  {/* Line Chart */}
+  <Card className="p-6 overflow-x-auto rounded-xl">
+    <h2 className="text-xl font-semibold mb-4">Transaction Line Chart</h2>
+    <div className="min-w-[600px] h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={transactions.map((t, i) => ({ ...t, index: i }))}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
+          <XAxis dataKey="index" label={{ value: "Transaction", position: "insideBottom", offset: -5 }} />
+          <YAxis label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }} />
+          <Tooltip formatter={(value) => `$${value}`} labelFormatter={() => ""} />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="amount"
+            data={transactions.filter((t) => t.type === "income").map((t, i) => ({ ...t, index: i }))}
+            stroke="#22c55e"
+            name="Income"
+            dot
+          />
+          <Line
+            type="monotone"
+            dataKey="amount"
+            data={transactions.filter((t) => t.type === "expense").map((t, i) => ({ ...t, index: i }))}
+            stroke="#ef4444"
+            name="Expense"
+            dot
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </Card>
+
+  {/* Edit Modal */}
+  <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Edit Transaction</DialogTitle>
+      </DialogHeader>
+      <Card className="p-4 space-y-4">
+        <Input
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <Input
+          placeholder="Amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full border border-input bg-background px-3 py-2 rounded-md text-sm"
+        >
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <Button onClick={handleUpdate} className="w-full">
+          Update
+        </Button>
+      </Card>
+    </DialogContent>
+  </Dialog>
+</div>
+
+
   );
 }

@@ -32,7 +32,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
   return (
     <Dialog open={isOpen || defaultOpen} onOpenChange={setClose}>
       <DialogContent className="bg-card max-w-xl">
-        <ScrollArea scrollShadow={scrollShadow} className="md:max-h-[700px]">
+        <ScrollArea scrollShadow={scrollShadow} className="md:max-h-[700px] max-h-[600px]">
           <div className="flex flex-col gap-4">
             <DialogHeader className="text-left">
               <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>

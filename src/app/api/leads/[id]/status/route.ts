@@ -14,7 +14,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     const updatedLead = await db.lead.update({
       where: { id: leadId },
-      data: { status },
+      data: { status  },
     });
 
     return NextResponse.json(updatedLead);

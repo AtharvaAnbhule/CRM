@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Stripe from "stripe";
@@ -125,32 +125,14 @@ const AgencyIdPage: React.FC<AgencyIdPageProps> = async ({ params }) => {
     const currency = payments[0]?.currency?.toUpperCase() || "INR";
   
 
-     
- 
-    // You now have:
-    // totalClosedSessions, totalPendingSessions, net, potentialIncome, closingRate, currency
   }
-  const products = await getProducts() ;
-  // {!agencyDetails.connectAccountId && (
-  //   <div className="absolute -top-10 -left-10 right-0 bottom-0 z-30 flex items-center justify-center backdrop-blur-md bg-background/50">
-  //     <Card>
-  //       <CardHeader>
-  //         <CardTitle>Connect Your Stripe</CardTitle>
-  //         <CardDescription>
-  //           You need to connect your stripe account to see metrics
-  //         </CardDescription>
-  //         <Link
-  //           href={`/agency/${agencyDetails.id}/launchpad`}
-  //           className="p-2 w-fit bg-secondary text-white rounded-md flex items-center gap-2"
-  //         >
-  //           <Clipboard />
-  //           Launch Pad
-  //         </Link>
-  //       </CardHeader>
-  //     </Card>
-  //   </div>
-  // )}
-  const leads = await getLeadDone(agencyId) ;
+  const products = await getProducts(agencyId) ;
+  
+   
+  
+    const leads = await getLeadDone(agencyId) ;
+
+
   
   return (
     <>
@@ -259,7 +241,7 @@ const AgencyIdPage: React.FC<AgencyIdPageProps> = async ({ params }) => {
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Updated At</TableHead>
+        
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -269,7 +251,7 @@ const AgencyIdPage: React.FC<AgencyIdPageProps> = async ({ params }) => {
               <TableCell>{lead.email}</TableCell>
               <TableCell>{lead.phone}</TableCell>
               <TableCell className="text-green-600 font-semibold">{lead.status}</TableCell>
-              <TableCell>{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
+              
             </TableRow>
           ))}
         </TableBody>

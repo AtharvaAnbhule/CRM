@@ -51,7 +51,7 @@ export function constructMetadata({
   title = "Workeloo - run your company",
   description = "Workeloo - run your company in just one place",
   image = "/assets/preview.png",
-  icons = "/assets/plura-logo.svg",
+  icons = "/assets/logo1.png",
   noIndex = false,
 }: {
   title?: string;

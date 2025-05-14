@@ -39,6 +39,7 @@ const CreateButton: React.FC<CreateButtonProps> = ({ agencyId, user }) => {
     setOpen(
       <CustomModal
         title="Create A Account"
+        
         subTitle = "You can create multiple accounts for a company."
       >
       <SubAccountDetails

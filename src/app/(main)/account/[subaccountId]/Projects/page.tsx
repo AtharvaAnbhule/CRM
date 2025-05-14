@@ -11,7 +11,7 @@ import FileUpload from "@/components/common/FileUpload";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Check, ExternalLink, Github , Plus, UserPlus } from "lucide-react";
+import { Check, ExternalLink, Github , Plus, UserPlus, X } from "lucide-react";
 import { Select, SelectContent, SelectItem } from '@/components/ui/select';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -369,7 +369,14 @@ fetchEmployees() ;
       <SheetContent
         side="right"
         className="dark:bg-gray-900 bg-white overflow-y-auto dark:text-white p-6 w-full sm:max-w-[700px] h-[100vh] rounded-l-xl shadow-2xl"
-      >
+      > 
+      <button
+    onClick={() => setDetailsOpen(false)}
+    className="absolute top-4 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white transition"
+    aria-label="Close"
+  >
+    <X size={20} />
+  </button>
         <div className="flex flex-col gap-4">
           {/* Image */}
           {selectedProject?.image && (

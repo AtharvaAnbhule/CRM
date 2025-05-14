@@ -197,7 +197,7 @@ const FunnelSteps: React.FC<FunnelStepsProps> = ({
                     </div>
                   </Link>
                 </div>
-                <p className="text-sm text-gray-500">Here you can configure the selected builder page settings.</p>
+                <p className="text-sm text-gray-500">Accessing the Builder Page is available in Dekstop version only.Here you can configure the selected builder page settings.</p>
                 <FunnelPageDetails
                   subAccountId={subAccountId}
                   defaultData={clickedPage}

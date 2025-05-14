@@ -203,7 +203,7 @@ const CompanyDetails: React.FC<AgencyDetailsProps> = ({ data }) => {
 
   return (
     <AlertDialog>
-    <div className= "flex sm:flex-col lg:flex-row gap-5" >
+    <div className= "flex flex-col lg:flex-row gap-5" >
     <div>
     <Card className= "w-full my-10" >
       <CardHeader>

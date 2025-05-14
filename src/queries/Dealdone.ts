@@ -7,9 +7,7 @@ export const getLeadDone = async (agencyId: string) => {
         status: {
           equals: "Deal Done", // safer than just status: "Deal Done"
         },
-        agencyId: {
-          equals: agencyId,
-        },
+        
       },
       orderBy: {
         createdAt: "desc",

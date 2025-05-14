@@ -37,18 +37,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
 
   return (
     <div className= "flex gap-4 flex-col max-w-4xl w-full mx-auto items-center" >
-    <Card className="flex-1 flex-shrink w-full" >
-      <CardHeader>
-      <CardTitle>Builder Products </CardTitle>
-        <CardDescription>
-            Select the products and services you wish to sell on this Builder.
-            You can sell one time and recurring products too.
-          </CardDescription>
-    </CardHeader>
-    < CardContent >
-    <FunnelProductsTable defaultData={ defaultData } products = { products } />
-      </CardContent>
-      </Card>
+    
 
       < FunnelDetails subAccountId = { subAccountId } defaultData = { defaultData } />
         </div>

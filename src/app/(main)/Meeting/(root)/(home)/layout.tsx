@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Workeloo is the leader in modern enterprise video communications, with an easy, reliable cloud platform for video and audio conferencing, chat, and webinars across mobile, desktop, and room systems.",
   icons: {
-    icon: "/icons/logo.svg",
+    icon: "/assets/logo.png",
   },
 };
 
