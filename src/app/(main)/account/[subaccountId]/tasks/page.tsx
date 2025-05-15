@@ -466,7 +466,7 @@ export default function CalendarPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Today's Tasks</CardTitle>
+                <CardTitle>Todays Tasks</CardTitle>
               </CardHeader>
               <CardContent>
                 {todayEvents.length > 0 ? (
