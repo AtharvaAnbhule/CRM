@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { usePathname } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   BarChart,
   Bar,
@@ -34,15 +39,28 @@ import {
   Scatter,
   LineChart,
   Legend,
-  Line
+  Line,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
+import { Search, Filter, ArrowUpDown, Download, Upload } from "lucide-react";
+import DatePicker from "react-datepicker";
+
 
 type Transaction = {
   id: string;
   title: string;
   amount: number;
   type: string;
+  date: string;
+  category?: string;
 };
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+
+const CATEGORIES = ["Marketing", "Advertising", "Sales", "Software", "Subscriptions", "Salaries", "Utilities", "Rent", "Travel", "Meals & Entertainment", "Office Supplies", "Legal & Professional Services", "Insurance", "Taxes", "Training & Education", "Equipment", "Maintenance", "Shipping", "Inventory", "Miscellaneous"]
+
 
 export default function TransactionsPage() {
   const pathname = usePathname();
@@ -53,10 +71,20 @@ export default function TransactionsPage() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("income");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+
+  // Filter and sort states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchTransactions = async () => {
     const res = await fetch("/api/transactions");
@@ -74,6 +102,7 @@ export default function TransactionsPage() {
       amount: parseFloat(amount),
       type,
       subaccountid: subaccountId,
+      category,
     };
 
     const res = await fetch("/api/transactions", {
@@ -98,6 +127,7 @@ export default function TransactionsPage() {
       amount: parseFloat(amount),
       type,
       subaccountid: subaccountId,
+      category,
     };
 
     const res = await fetch(`/api/transactions/${editId}`, {
@@ -173,6 +203,8 @@ export default function TransactionsPage() {
             amount: parseFloat(String(tx.amount)),
             type: tx.type,
             subaccountid: subaccountId,
+            category: tx.category || "Other",
+            date: tx.date || new Date().toISOString(),
           };
 
           await fetch("/api/transactions", {
@@ -197,224 +229,575 @@ export default function TransactionsPage() {
     setTitle("");
     setAmount("");
     setType("income");
+    setCategory("");
+    setDate(new Date());
     setEditId(null);
   };
 
-  const totalIncome = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Filter and sort logic
+  const filteredTransactions = useMemo(() => {
+    let filtered = [...transactions];
 
-  const chartData = transactions.map((t) => ({
-    name: t.title,
-    income: t.type === "income" ? t.amount : 0,
-    expense: t.type === "expense" ? t.amount : 0,
-  }));
+    if (searchTerm) {
+      filtered = filtered.filter((t) =>
+        t.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterType !== "all") {
+      filtered = filtered.filter((t) => t.type === filterType);
+    }
+
+    if (filterCategory !== "all") {
+      filtered = filtered.filter((t) => t.category === filterCategory);
+    }
+
+    if (sortConfig !== null) {
+      filtered.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "ascending" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [transactions, searchTerm, filterType, filterCategory, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction = "ascending";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "ascending"
+    ) {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const currentItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, filteredTransactions]);
+
+  // Analytics calculations
+  const totalIncome = useMemo(
+    () =>
+      filteredTransactions
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0),
+    [filteredTransactions]
+  );
+
+  const totalExpense = useMemo(
+    () =>
+      filteredTransactions
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0),
+    [filteredTransactions]
+  );
+
+  const netBalance = totalIncome - totalExpense;
+
+  const incomeByCategory = useMemo(() => {
+    const income = filteredTransactions.filter((t) => t.type === "income");
+    const categories = [...new Set(income.map((t) => t.category || "Other"))];
+    return categories.map((cat) => ({
+      name: cat,
+      value: income
+        .filter((t) => t.category === cat || (!t.category && cat === "Other"))
+        .reduce((sum, t) => sum + t.amount, 0),
+    }));
+  }, [filteredTransactions]);
+
+  const expenseByCategory = useMemo(() => {
+    const expense = filteredTransactions.filter((t) => t.type === "expense");
+    const categories = [...new Set(expense.map((t) => t.category || "Other"))];
+    return categories.map((cat) => ({
+      name: cat,
+      value: expense
+        .filter((t) => t.category === cat || (!t.category && cat === "Other"))
+        .reduce((sum, t) => sum + t.amount, 0),
+    }));
+  }, [filteredTransactions]);
+
+  const chartData = useMemo(
+    () =>
+      filteredTransactions.map((t) => ({
+        name: t.title,
+        income: t.type === "income" ? t.amount : 0,
+        expense: t.type === "expense" ? t.amount : 0,
+        date: new Date(t.date).toLocaleDateString(),
+      })),
+    [filteredTransactions]
+  );
+
+  const monthlyData = useMemo(() => {
+    const monthly: Record<string, { income: number; expense: number; month: string }> = {};
+
+    filteredTransactions.forEach((t) => {
+      const date = new Date(t.date);
+      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const monthName = date.toLocaleString("default", { month: "short" });
+
+      if (!monthly[monthYear]) {
+        monthly[monthYear] = { income: 0, expense: 0, month: monthName };
+      }
+
+      if (t.type === "income") {
+        monthly[monthYear].income += t.amount;
+      } else {
+        monthly[monthYear].expense += t.amount;
+      }
+    });
+
+    return Object.values(monthly).sort((a, b) => {
+      const aDate = new Date(a.month + " 1, 2000");
+      const bDate = new Date(b.month + " 1, 2000");
+      return aDate.getTime() - bDate.getTime();
+    });
+  }, [filteredTransactions]);
 
   return (
-    <div className="p-4 sm:p-8 md:p-10 lg:p-16 max-w-7xl mx-auto space-y-6 overflow-y-auto">
-  {/* Header and Controls */}
-  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-    <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
-    <div className="flex flex-wrap gap-2 items-center">
-      <Input type="file" accept=".csv,.json" onChange={handleImport} />
-      <Button variant="outline" onClick={handleDownload}>
-        Download
-      </Button>
-      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogTrigger asChild>
-          <Button onClick={() => resetForm()} className="rounded-xl">
-            + Add Transaction
+    <div className="p-4 m-5 sm:p-8 md:p-10 lg:p-16 max-w-7xl mx-auto space-y-6 overflow-y-auto">
+      {/* Header and Controls */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search transactions..."
+              className="pl-10 w-[200px]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <Select value={filterType} onValueChange={(val: "all" | "income" | "expense") => setFilterType(val)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {CATEGORIES.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button variant="outline" size="icon" onClick={handleDownload}>
+            <Download className="h-4 w-4" />
           </Button>
-        </DialogTrigger>
+          
+          <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => resetForm()} className="rounded-xl">
+                + Add Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Transaction</DialogTitle>
+              </DialogHeader>
+              <Card className="p-4 space-y-4">
+                <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Input
+                  placeholder="Amount"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <DatePicker selected={date} onSelect={setDate} />
+                <Button onClick={handleCreate} className="w-full">
+                  Create
+                </Button>
+              </Card>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-6 rounded-xl bg-green-50 dark:bg-green-900/20">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Income</p>
+              <p className="text-2xl font-bold text-green-600">${totalIncome.toFixed(2)}</p>
+            </div>
+            <div className="bg-green-100 dark:bg-green-800 p-3 rounded-full">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-green-600 dark:text-green-300"
+              >
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="p-6 rounded-xl bg-red-50 dark:bg-red-900/20">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Expense</p>
+              <p className="text-2xl font-bold text-red-600">${totalExpense.toFixed(2)}</p>
+            </div>
+            <div className="bg-red-100 dark:bg-red-800 p-3 rounded-full">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-red-600 dark:text-red-300"
+              >
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className={`p-6 rounded-xl ${netBalance >= 0 ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}>
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground">Net Balance</p>
+              <p className={`text-2xl font-bold ${netBalance >= 0 ? "text-green-600" : "text-red-600"}`}>
+                ${netBalance.toFixed(2)}
+              </p>
+            </div>
+            <div className={`p-3 rounded-full ${netBalance >= 0 ? "bg-green-100 dark:bg-green-800" : "bg-red-100 dark:bg-red-800"}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={netBalance >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}
+              >
+                <path d="M6 15h12M6 9h12" />
+              </svg>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Monthly Trends */}
+        <Card className="p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Monthly Trends</h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => `$${value}`} />
+                <Legend />
+                <Bar dataKey="income" fill="#22c55e" name="Income" />
+                <Bar dataKey="expense" fill="#ef4444" name="Expense" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Income/Expense Distribution */}
+        <Card className="p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Income/Expense Distribution</h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Income", value: totalIncome },
+                    { name: "Expense", value: totalExpense },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  <Cell fill="#22c55e" />
+                  <Cell fill="#ef4444" />
+                </Pie>
+                <Tooltip formatter={(value) => `$${value}`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Income by Category */}
+        <Card className="p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Income by Category</h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={incomeByCategory}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {incomeByCategory.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value}`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Expense by Category */}
+        <Card className="p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Expense by Category</h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={expenseByCategory}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {expenseByCategory.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value}`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
+
+      {/* Transaction Table */}
+      <Card className="rounded-xl overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px] cursor-pointer" onClick={() => requestSort("title")}>
+                <div className="flex items-center">
+                  Title
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => requestSort("amount")}>
+                <div className="flex items-center">
+                  Amount
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => requestSort("type")}>
+                <div className="flex items-center">
+                  Type
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => requestSort("category")}>
+                <div className="flex items-center">
+                  Category
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => requestSort("date")}>
+                <div className="flex items-center">
+                  Date
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {currentItems.map((txn) => (
+              <TableRow key={txn.id}>
+                <TableCell>{txn.title}</TableCell>
+                <TableCell className={txn.type === "income" ? "text-green-600" : "text-red-600"}>
+                  ${txn.amount.toFixed(2)}
+                </TableCell>
+                <TableCell className="capitalize">{txn.type}</TableCell>
+                <TableCell>{txn.category || "Other"}</TableCell>
+                <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setEditId(txn.id);
+                      setTitle(txn.title);
+                      setAmount(txn.amount.toString());
+                      setType(txn.type);
+                      setCategory(txn.category || "");
+                      setDate(new Date(txn.date));
+                      setEditModalOpen(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(txn.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-muted-foreground">
+            Showing{" "}
+            <strong>
+              {Math.min((currentPage - 1) * itemsPerPage + 1, filteredTransactions.length)}-
+              {Math.min(currentPage * itemsPerPage, filteredTransactions.length)}
+            </strong>{" "}
+            of <strong>{filteredTransactions.length}</strong> transactions
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? "default" : "outline"}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Transaction</DialogTitle>
+            <DialogTitle>Edit Transaction</DialogTitle>
           </DialogHeader>
           <Card className="p-4 space-y-4">
-            <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
             <Input
               placeholder="Amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full border border-input bg-background px-3 py-2 rounded-md text-sm"
-            >
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            <Button onClick={handleCreate} className="w-full">
-              Create
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">Expense</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <DatePicker selected={date} onSelect={setDate} />
+            <Button onClick={handleUpdate} className="w-full">
+              Update
             </Button>
           </Card>
         </DialogContent>
       </Dialog>
     </div>
-  </div>
-
-  {/* Summary */}
-  <Card className="p-6 rounded-xl shadow bg-muted text-foreground flex flex-wrap justify-between items-center font-semibold text-lg gap-4">
-    <div>
-      💰 Income: <span className="text-green-600">${totalIncome.toFixed(2)}</span>
-    </div>
-    <div>
-      💸 Expense: <span className="text-red-600">${totalExpense.toFixed(2)}</span>
-    </div>
-  </Card>
-
-  {/* Scatter Plot */}
-  <Card className="p-6 overflow-x-auto rounded-xl">
-    <h2 className="text-xl font-semibold mb-4">Transaction Scatter Plot</h2>
-    <div className="min-w-[600px] h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart>
-          <XAxis
-            type="number"
-            dataKey="index"
-            name="Index"
-            label={{ value: "Transaction", position: "insideBottom", offset: -5 }}
-          />
-          <YAxis
-            type="number"
-            dataKey="amount"
-            name="Amount"
-            label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }}
-          />
-          <Tooltip
-            cursor={{ strokeDasharray: "3 3" }}
-            formatter={(value) => `$${value}`}
-            labelFormatter={() => ""}
-          />
-          <Scatter
-            name="Income"
-            data={transactions.map((t, i) => ({ ...t, index: i })).filter((t) => t.type === "income")}
-            fill="#22c55e"
-          />
-          <Scatter
-            name="Expense"
-            data={transactions.map((t, i) => ({ ...t, index: i })).filter((t) => t.type === "expense")}
-            fill="#ef4444"
-          />
-        </ScatterChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
-
-  {/* Table */}
-  <Card className="rounded-xl overflow-auto max-h-[400px]">
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[200px]">Title</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {transactions.map((txn) => (
-          <TableRow key={txn.id}>
-            <TableCell>{txn.title}</TableCell>
-            <TableCell>${txn.amount.toFixed(2)}</TableCell>
-            <TableCell className="capitalize">{txn.type}</TableCell>
-            <TableCell className="text-right space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setEditId(txn.id);
-                  setTitle(txn.title);
-                  setAmount(txn.amount.toString());
-                  setType(txn.type);
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-              <Button size="sm" variant="destructive" onClick={() => handleDelete(txn.id)}>
-                Delete
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </Card>
-
-  {/* Line Chart */}
-  <Card className="p-6 overflow-x-auto rounded-xl">
-    <h2 className="text-xl font-semibold mb-4">Transaction Line Chart</h2>
-    <div className="min-w-[600px] h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={transactions.map((t, i) => ({ ...t, index: i }))}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <XAxis dataKey="index" label={{ value: "Transaction", position: "insideBottom", offset: -5 }} />
-          <YAxis label={{ value: "Amount ($)", angle: -90, position: "insideLeft" }} />
-          <Tooltip formatter={(value) => `$${value}`} labelFormatter={() => ""} />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="amount"
-            data={transactions.filter((t) => t.type === "income").map((t, i) => ({ ...t, index: i }))}
-            stroke="#22c55e"
-            name="Income"
-            dot
-          />
-          <Line
-            type="monotone"
-            dataKey="amount"
-            data={transactions.filter((t) => t.type === "expense").map((t, i) => ({ ...t, index: i }))}
-            stroke="#ef4444"
-            name="Expense"
-            dot
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
-
-  {/* Edit Modal */}
-  <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-    <DialogContent className="max-w-md">
-      <DialogHeader>
-        <DialogTitle>Edit Transaction</DialogTitle>
-      </DialogHeader>
-      <Card className="p-4 space-y-4">
-        <Input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <Input
-          placeholder="Amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className="w-full border border-input bg-background px-3 py-2 rounded-md text-sm"
-        >
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        <Button onClick={handleUpdate} className="w-full">
-          Update
-        </Button>
-      </Card>
-    </DialogContent>
-  </Dialog>
-</div>
-
-
   );
 }

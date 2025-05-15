@@ -286,7 +286,7 @@ const tasks = getAllTaskCountToday(subaccountId) ;
         className="text-sm stroke-violet-500"
         data={
           transactions.map((tx) => ({
-            created: new Date(tx.createdAt).toLocaleDateString(), // X-axis
+            created: new Date(tx.date).toLocaleDateString(), // X-axis
             amount: tx.amount, // Y-axis
           })) || []
         }
@@ -331,7 +331,7 @@ const tasks = getAllTaskCountToday(subaccountId) ;
               <TableCell>{transaction.id}</TableCell>
               <TableCell>${transaction.amount.toFixed(2)}</TableCell>
               <TableCell>{transaction.type}</TableCell>
-              <TableCell>{new Date(transaction.createdAt).toLocaleString()}</TableCell>
+              <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
             </TableRow>
           ))}
         </TableBody>

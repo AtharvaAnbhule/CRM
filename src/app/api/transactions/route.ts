@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const transactions = await db.transaction.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { date: "desc" },
   });
   return NextResponse.json(transactions);
 }

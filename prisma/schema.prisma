@@ -494,6 +494,7 @@ model Agenda {
   priority     String
   start        DateTime
   end          DateTime
+  completed   Boolean  @default(false)
   createdAt    DateTime @default(now())
 }
 
@@ -643,7 +644,8 @@ model Transaction {
   subaccountid String
   amount       Float
   type         String
-  createdAt    DateTime @default(now())
+  category     String @default("")
+  date    DateTime @default(now())
 }
 
 

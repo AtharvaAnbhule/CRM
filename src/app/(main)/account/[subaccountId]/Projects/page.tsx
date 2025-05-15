@@ -1,28 +1,33 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader , DialogDescription , DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import FileUpload from "@/components/common/FileUpload";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Check, ExternalLink, Github , Plus, UserPlus, X } from "lucide-react";
-import { Select, SelectContent, SelectItem } from '@/components/ui/select';
-import { Skeleton } from "@/components/ui/skeleton";
-
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useParams, usePathname } from "next/navigation";
-
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
+// UI Components
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import FileUpload from "@/components/common/FileUpload";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from "@/components/ui/progress";
 
+// Charts
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
 
+// Icons
+import { Check, ExternalLink, Github, Plus, UserPlus, X, Edit, Trash2, Bug, Calendar as CalendarIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+
+// Types
 interface Bug {
   id: string;
   title: string;
@@ -31,202 +36,309 @@ interface Bug {
   createdAt: string;
 }
 
+interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;
+}
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  liveLink: string;
+  githubUrl: string;
+  duration: string;
+  startDate: string;
+  priority: string;
+  tasks: number;
+  activeTasks: number;
+  image: string;
+  assignees: Employee[];
+  progress?: number;
+}
 
-
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function Projects() {
+  const pathname = usePathname();
+  const pathParts = pathname.split("/");
+  const subaccountId = pathParts[2];
 
-const pathname = usePathname();
-const pathParts = pathname.split("/");
-const subaccountId = pathParts[2]; // assuming the URL is /company/<agencyId>/billing/checkout
+  // State
   const [bugs, setBugs] = useState<Bug[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [newBugTitle, setNewBugTitle] = useState('');
-  const [newBugDescription, setNewBugDescription] = useState('');
-
-  const [openModal, setOpenModal] = useState(false);
-
-
-  // Add Bug function
-
-const addBug = async () => {
-  if (!newBugTitle || !newBugDescription) {
-    toast.success("Success");
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/bugs`, {
-      method: 'POST',
-      body: JSON.stringify({
-        title: newBugTitle,
-        description: newBugDescription,
-        projectId: subaccountId,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to add bug');
-    }
-
-    toast.success("Bug Added Successfully.");
-
-    setNewBugTitle('');
-    setNewBugDescription('');
-    setOpenModal(false);
-    fetchBugs();
-  } catch (error) {
-    console.error(error);
-    toast.error("Error");
-  }
-};
-
-
-  const fetchBugs = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/bugs?projectId=${subaccountId}`);
-      const data = await res.json();
-      setBugs(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (subaccountId) {
-      fetchBugs();
-    }
-  }, [subaccountId]);
-
-  const resolveBug = async (bugId: string) => {
-    try {
-      const res = await fetch(`/api/bugs/${bugId}`, {
-        method: 'PATCH',
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to resolve bug');
-      }
-
-      toast.success("Success");
-
-      fetchBugs();
-    } catch (error) {
-      console.error(error);
-      toast.error("Error");
-    }
-  };
-  const [projects, setProjects] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState({
+    projects: false,
+    bugs: false,
+    employees: false,
+    actions: false
+  });
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  
+  // Modal states
+  const [openBugModal, setOpenBugModal] = useState(false);
+  const [openProjectModal, setOpenProjectModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false); // 🔥 Sidebar State
-  const [selectedProject, setSelectedProject] = useState(null); // 🔥 Store Selected Project
-
-  const [employees, setEmployees] = useState([]);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-
-  const [formData, setFormData] = useState({
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  
+  // Form states
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  
+  // Form data
+  const [newBug, setNewBug] = useState({
+    title: "",
+    description: ""
+  });
+  
+  const [projectForm, setProjectForm] = useState({
     title: "",
     description: "",
     liveLink: "",
     githubUrl: "",
     duration: "",
     startDate: "",
-    priority: "",
+    priority: "medium",
     tasks: 0,
     activeTasks: 0,
     image: "",
-    projectId:subaccountId,
+    projectId: subaccountId,
     assignees: [],
   });
-  const [editingProject, setEditingProject] = useState(false);
-  const [deleteProjectId, setDeleteProjectId] = useState(null);
 
+  // Fetch data functions
+  const fetchBugs = useCallback(async () => {
+    setLoading(prev => ({ ...prev, bugs: true }));
+    try {
+      const res = await fetch(`/api/bugs?projectId=${subaccountId}`);
+      const data = await res.json();
+      setBugs(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch bugs");
+    } finally {
+      setLoading(prev => ({ ...prev, bugs: false }));
+    }
+  }, [subaccountId]);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
+    setLoading(prev => ({ ...prev, employees: true }));
     try {
       const res = await fetch(`/api/employees?subaccountId=${subaccountId}`);
       if (!res.ok) throw new Error("Failed to fetch employees");
       const data = await res.json();
-
-
       setEmployees(data);
-       
-
-     
     } catch (err) {
       console.error("Error fetching employees:", err);
-    } 
-  };
+      toast.error("Failed to fetch employees");
+    } finally {
+      setLoading(prev => ({ ...prev, employees: false }));
+    }
+  }, [subaccountId]);
 
-  useEffect(() => {
-    fetchProjects();
-fetchEmployees() ; 
-  }, []);
- //@ts-ignore
-  function openProjectDetails(project) {
-    setSelectedProject(project);
-    setDetailsOpen(true);
-  }
-
-  async function fetchProjects() {
+  const fetchProjects = useCallback(async () => {
+    setLoading(prev => ({ ...prev, projects: true }));
     try {
-      const res = await fetch(`/api/projects?subAccountId=${subaccountId}`, {
-        method: 'GET', // Ensure it's using GET method
-      });
-  
-      if (!res.ok) throw new Error("Failed to fetch");
-  
+      const res = await fetch(`/api/projects?subAccountId=${subaccountId}`);
+      if (!res.ok) throw new Error("Failed to fetch projects");
       const data = await res.json();
-      setProjects(data); // Assuming you have a state to hold your projects
+      // Calculate progress for each project
+      const projectsWithProgress = data.map((project: Project) => ({
+        ...project,
+        progress: project.tasks > 0 ? Math.round((project.activeTasks / project.tasks) * 100) : 0
+      }));
+      setProjects(projectsWithProgress);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      toast.error("Failed to fetch projects");
+    } finally {
+      setLoading(prev => ({ ...prev, projects: false }));
     }
-  }
+  }, [subaccountId]);
 
-  async function handleSubmit(e: any) {
+  // Load data on mount
+  useEffect(() => {
+    if (subaccountId) {
+      fetchProjects();
+      fetchEmployees();
+      fetchBugs();
+    }
+  }, [subaccountId, fetchProjects, fetchEmployees, fetchBugs]);
+
+  // Bug handlers
+  const addBug = async () => {
+    if (!newBug.title || !newBug.description) {
+      toast.warning("Please fill all fields");
+      return;
+    }
+
+    setLoading(prev => ({ ...prev, actions: true }));
+    try {
+      const res = await fetch(`/api/bugs`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: newBug.title,
+          description: newBug.description,
+          projectId: subaccountId,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to add bug');
+
+      toast.success("Bug added successfully");
+      setNewBug({ title: "", description: "" });
+      setOpenBugModal(false);
+      fetchBugs();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add bug");
+    } finally {
+      setLoading(prev => ({ ...prev, actions: false }));
+    }
+  };
+
+  const resolveBug = async (bugId: string) => {
+    setLoading(prev => ({ ...prev, actions: true }));
+    try {
+      const res = await fetch(`/api/bugs/${bugId}`, {
+        method: 'PATCH',
+      });
+
+      if (!res.ok) throw new Error('Failed to resolve bug');
+
+      toast.success("Bug resolved successfully");
+      fetchBugs();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to resolve bug");
+    } finally {
+      setLoading(prev => ({ ...prev, actions: false }));
+    }
+  };
+
+  // Project handlers
+  const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(prev => ({ ...prev, actions: true }));
+    
     const method = editingProject ? "PUT" : "POST";
-     //@ts-ignore
     const url = editingProject ? `/api/projects/${editingProject.id}` : "/api/projects";
 
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(projectForm),
       });
-      if (!res.ok) throw new Error("Failed to save project");
-      setModalOpen(false);
-       //@ts-ignore
+      
+      if (!res.ok) throw new Error(editingProject ? "Failed to update project" : "Failed to create project");
+
+      toast.success(editingProject ? "Project updated successfully" : "Project created successfully");
+      setOpenProjectModal(false);
       setEditingProject(null);
       fetchProjects();
     } catch (error) {
       console.error("Error saving project:", error);
+      toast.error(editingProject ? "Failed to update project" : "Failed to create project");
+    } finally {
+      setLoading(prev => ({ ...prev, actions: false }));
     }
-  }
+  };
 
-  async function handleDelete() {
+  const handleDeleteProject = async () => {
     if (!deleteProjectId) return;
+    setLoading(prev => ({ ...prev, actions: true }));
+    
     try {
       const res = await fetch(`/api/projects/${deleteProjectId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      if (!res.ok) throw new Error("Failed to delete project");
+
+      toast.success("Project deleted successfully");
       setDeleteModalOpen(false);
       fetchProjects();
     } catch (error) {
       console.error("Error deleting project:", error);
+      toast.error("Failed to delete project");
+    } finally {
+      setLoading(prev => ({ ...prev, actions: false }));
     }
-  }
+  };
 
+  const onAssignEmployee = async () => {
+    if (!selectedEmployee || !selectedProject) return;
+    
+    // Check if employee is already assigned
+    if (selectedProject.assignees.some(emp => emp.id === selectedEmployee)) {
+      toast.warning("Employee is already assigned to this project");
+      return;
+    }
 
+    setLoading(prev => ({ ...prev, actions: true }));
+    try {
+      const res = await fetch('/api/assign-employee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          projectId: selectedProject.id, 
+          employeeId: selectedEmployee 
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to assign employee');
+
+      toast.success("Employee assigned successfully");
+      setSelectedEmployee("");
+      
+      // Refresh project details
+      const updatedProjectRes = await fetch(`/api/assign-employee/${selectedProject.id}`);
+      if (updatedProjectRes.ok) {
+        const updatedProject = await updatedProjectRes.json();
+        setSelectedProject(updatedProject);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to assign employee");
+    } finally {
+      setLoading(prev => ({ ...prev, actions: false }));
+    }
+  };
+
+  // Helper functions
+  const openProjectDetails = (project: Project) => {
+    setSelectedProject(project);
+    setDetailsOpen(true);
+  };
+
+  const openEditProjectModal = (project: Project) => {
+    setEditingProject(project);
+    setProjectForm({
+      title: project.title,
+      description: project.description,
+      liveLink: project.liveLink,
+      githubUrl: project.githubUrl,
+      duration: project.duration,
+      startDate: project.startDate.split("T")[0],
+      priority: project.priority,
+      tasks: project.tasks,
+      activeTasks: project.activeTasks,
+      image: project.image,
+      projectId: subaccountId,
+      assignees: project.assignees,
+    });
+    setOpenProjectModal(true);
+  };
+
+  const openDeleteProjectModal = (id: string) => {
+    setDeleteProjectId(id);
+    setDeleteModalOpen(true);
+  }; 
   useEffect(() => {
      //@ts-ignore
     if (selectedProject?.id) {
@@ -243,372 +355,763 @@ fetchEmployees() ;
     }
      //@ts-ignore
   }, [selectedProject?.id]);
-  
-  
 
-
-  const onAssignEmployees = () => {
-     //@ts-ignore
-    if (!selectedEmployee || selectedProject.assignees.some(emp => emp.id === selectedEmployee)) {
-      return toast.error('Employee is already assigned to this project.');
-    }
-    try{
-    fetch('/api/assign-employee', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-       //@ts-ignore
-      body: JSON.stringify({ projectId: selectedProject.id, employeeId: selectedEmployee }),
-    })
-      .then(response => response.json())
-      .then(() => {
-        setSelectedEmployee(null);
-        toast.success("Employee assigned succesfully.") ; 
-      });
-    } catch { 
-      toast.error("Something went wrong!") ; 
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  function openEditModal(project: any) {
-    setEditingProject(project);
-    setFormData({
-      ...project,
-      startDate: project.startDate.split("T")[0],
-    });
-    setModalOpen(true);
-  }
+  // Chart data
+  const projectStatusData = [
+    { name: 'Completed', value: projects.filter(p => p.progress === 100).length },
+    { name: 'In Progress', value: projects.filter(p => p.progress > 0 && p.progress < 100).length },
+    { name: 'Not Started', value: projects.filter(p => p.progress === 0).length },
+  ];
 
-  function openDeleteModal(id: any) {
-    setDeleteProjectId(id);
-    setDeleteModalOpen(true);
-  }
- 
+  const priorityDistributionData = [
+    { name: 'High', value: projects.filter(p => p.priority === 'high').length },
+    { name: 'Medium', value: projects.filter(p => p.priority === 'medium').length },
+    { name: 'Low', value: projects.filter(p => p.priority === 'low').length },
+  ];
+
+  const taskCompletionData = projects.map(project => ({
+    name: project.title,
+    completed: project.tasks - project.activeTasks,
+    remaining: project.activeTasks,
+  }));
+
   return (
-    <div className="p-8 dark:bg-gray-900 min-h-screen dark:text-white">
-    <h1 className="text-3xl font-bold mb-2">Manage Your Projects</h1>
-    <p className="text-gray-600 dark:text-gray-400 mb-6">
-      Create, edit, and manage all your projects efficiently.
-    </p>
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogTrigger asChild>
-          <Button className="bg-violet-500 hover:bg-violet-700 text-white px-3 py-3 mb-4 flex gap-2 rounded-lg" onClick={()=>setEditingProject(false)}><Plus />Create Project</Button>
-        </DialogTrigger>
-        <DialogContent className="dark:bg-gray-800 p-6 w-[600px] dark:text-white">
-          <DialogTitle className="text-lg font-bold">{editingProject ? "Edit Project" : "Create Project"}</DialogTitle>
-          <form onSubmit={handleSubmit}>
-            {/* Image Upload */}
-            <FileUpload
-              value={formData.image}
-              onChange={(uploadedUrl) => setFormData({ ...formData, image: uploadedUrl || "" })}
-              endpoint="media"
-            /> 
-            
- 
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-          
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required />
-       
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Github Url" value={formData.githubUrl} onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })} required />
-             
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Live Link" value={formData.liveLink} onChange={(e) => setFormData({ ...formData, liveLink: e.target.value })} required />
-        
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Priority" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} required />
-            <h1> Tasks</h1>
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Tasks" type="number" value={formData.tasks} onChange={(e) => setFormData({ ...formData, tasks: Number(e.target.value) })} required />
-            <h1> Active Tasks</h1>
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" placeholder="Active Tasks" type="number" value={formData.activeTasks} onChange={(e) => setFormData({ ...formData, activeTasks: Number(e.target.value) })} required />
-            <h1> Date of establishment</h1>
-            <Input className="mb-2 dark:bg-gray-700 dark:text-white" type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required />
+    <div className="p-4 md:p-6 min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Project Management</h1>
+        <p className="text-muted-foreground">
+          Create, manage, and track all your projects in one place
+        </p>
+      </div>
 
-            <div className="flex justify-end">
-              <Button type="button" className="bg-gray-600 text-white px-4 py-2 rounded mr-2" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button type="submit" className="bg-violet-500 text-white px-4 py-2 rounded" >{editingProject ? "Update" : "Save"}</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Modal */}
-      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent className="dark:bg-gray-800 p-6 w-[400px] dark:text-white">
-          <DialogTitle className="text-lg font-bold">Delete Project</DialogTitle>
-          <p className="text-gray-400 mb-4">Are you sure you want to delete this project? This action cannot be undone.</p>
-          <div className="flex justify-end">
-            <Button className="dark:bg-gray-600 dark:text-white px-4 py-2 rounded mr-2" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleDelete}>Delete</Button>
+      {/* Analytics Dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Project Status</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={projectStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {projectStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <Card key={project.id} className="dark:bg-gray-800 dark:text-white shadow-lg rounded-lg overflow-hidden">
-            <CardHeader className="p-0 " onClick={() => openProjectDetails(project)}>
-              {project.image ? (
-                <Image src={project.image} alt={project.title} width={400} height={200} className="w-full h-48 object-cover" />
-              ) : (
-                <div className="h-48 dark:bg-gray-700 dark:text-white flex items-center justify-center">
-                  <span className="text-gray-400">No Image</span>
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Priority Distribution</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={priorityDistributionData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Projects</p>
+              <h3 className="text-2xl font-bold">{projects.length}</h3>
+            </div>
+            <div className="p-3 rounded-full bg-primary/10">
+              <Plus className="text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Active Tasks</p>
+              <h3 className="text-2xl font-bold">
+                {projects.reduce((sum, project) => sum + project.activeTasks, 0)}
+              </h3>
+            </div>
+            <div className="p-3 rounded-full bg-green-500/10">
+              <Check className="text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Tasks</p>
+              <h3 className="text-2xl font-bold">
+                {projects.reduce((sum, project) => sum + project.tasks, 0)}
+              </h3>
+            </div>
+            <div className="p-3 rounded-full bg-blue-500/10">
+              <CalendarIcon className="text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Open Bugs</p>
+              <h3 className="text-2xl font-bold">
+                {bugs.filter(bug => !bug.isResolved).length}
+              </h3>
+            </div>
+            <div className="p-3 rounded-full bg-red-500/10">
+              <Bug className="text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2">
+          <Dialog open={openProjectModal} onOpenChange={setOpenProjectModal}>
+            <DialogTrigger asChild>
+              <Button 
+                className="gap-2" 
+                onClick={() => {
+                  setEditingProject(null);
+                  setProjectForm({
+                    title: "",
+                    description: "",
+                    liveLink: "",
+                    githubUrl: "",
+                    duration: "",
+                    startDate: "",
+                    priority: "medium",
+                    tasks: 0,
+                    activeTasks: 0,
+                    image: "",
+                    projectId: subaccountId,
+                    assignees: [],
+                  });
+                }}
+              >
+                <Plus size={18} /> New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[75%] h-[75%] max-w-2xl overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingProject ? "Edit Project" : "Create New Project"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingProject ? "Update your project details" : "Fill in the details to create a new project"}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleProjectSubmit} className="grid gap-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    {/* Image Upload */}
+                    <div className="flex flex-col gap-2">
+                      <Label>Project Image</Label>
+                      <FileUpload
+                        value={projectForm.image}
+                        onChange={(uploadedUrl) => 
+                          setProjectForm({ ...projectForm, image: uploadedUrl || "" })
+                        }
+                        endpoint="media"
+                      />
+                    </div>
+
+                    {/* Title */}
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="title">Title *</Label>
+                      <Input
+                        id="title"
+                        placeholder="Project title"
+                        value={projectForm.title}
+                        onChange={(e) => 
+                          setProjectForm({ ...projectForm, title: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="description">Description *</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Project description"
+                        value={projectForm.description}
+                        onChange={(e) => 
+                          setProjectForm({ ...projectForm, description: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    {/* Links */}
+                    <div className="grid gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="githubUrl">GitHub URL</Label>
+                        <Input
+                          id="githubUrl"
+                          placeholder="https://github.com/..."
+                          value={projectForm.githubUrl}
+                          onChange={(e) => 
+                            setProjectForm({ ...projectForm, githubUrl: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="liveLink">Live URL</Label>
+                        <Input
+                          id="liveLink"
+                          placeholder="https://example.com"
+                          value={projectForm.liveLink}
+                          onChange={(e) => 
+                            setProjectForm({ ...projectForm, liveLink: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* Priority and Dates */}
+                    <div className="grid gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="priority">Priority *</Label>
+                        <Select
+                          value={projectForm.priority}
+                          onValueChange={(value) => 
+                            setProjectForm({ ...projectForm, priority: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="startDate">Start Date *</Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={projectForm.startDate}
+                          onChange={(e) => 
+                            setProjectForm({ ...projectForm, startDate: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tasks */}
+                    <div className="grid gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tasks">Total Tasks *</Label>
+                        <Input
+                          id="tasks"
+                          type="number"
+                          min="0"
+                          value={projectForm.tasks}
+                          onChange={(e) => 
+                            setProjectForm({ ...projectForm, tasks: Number(e.target.value) })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="activeTasks">Active Tasks *</Label>
+                        <Input
+                          id="activeTasks"
+                          type="number"
+                          min="0"
+                          max={projectForm.tasks}
+                          value={projectForm.activeTasks}
+                          onChange={(e) => 
+                            setProjectForm({ ...projectForm, activeTasks: Number(e.target.value) })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setOpenProjectModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={loading.actions}>
+                    {loading.actions ? "Processing..." : editingProject ? "Update Project" : "Create Project"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Projects Grid */}
+      {loading.projects ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-48 w-full" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Skeleton className="h-10 w-20" />
+                <Skeleton className="h-10 w-20" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : projects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <Card key={project.id} className="hover:shadow-md transition-shadow">
+              <CardHeader 
+                className="p-0 cursor-pointer" 
+                onClick={() => openProjectDetails(project)}
+              >
+                {project.image ? (
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      className="object-cover rounded-t-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 bg-muted flex items-center justify-center rounded-t-lg">
+                    <span className="text-muted-foreground">No Image</span>
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-lg line-clamp-1">{project.title}</h3>
+                  <Badge className={getPriorityColor(project.priority)}>
+                    {project.priority}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  {project.description}
+                </p>
+                
+                <div className="mb-2">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Progress</span>
+                    <span>{project.progress}%</span>
+                  </div>
+                  <Progress value={project.progress} className="h-2" />
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>Tasks: {project.tasks}</span>
+                  <span>Active: {project.activeTasks}</span>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => openEditProjectModal(project)}
+                >
+                  <Edit className="h-4 w-4 mr-2" /> Edit
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => openDeleteProjectModal(project.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
+          <div className="bg-muted p-4 rounded-full mb-4">
+            <Plus className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium mb-1">No projects yet</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Get started by creating a new project
+          </p>
+          <Dialog open={openProjectModal} onOpenChange={setOpenProjectModal}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" /> New Project
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+        </div>
+      )}
+
+      {/* Project Details Sheet */}
+      <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <SheetContent className="w-full sm:max-w-[700px] overflow-y-auto">
+          {selectedProject && (
+            <div className="space-y-6">
+              <SheetHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <SheetTitle className="text-2xl">{selectedProject.title}</SheetTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setDetailsOpen(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </SheetHeader>
+
+              {/* Project Image */}
+              {selectedProject.image && (
+                <div className="relative h-64 w-full rounded-lg overflow-hidden">
+                  <Image
+                    src={selectedProject.image}
+                    alt={selectedProject.title}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               )}
-            </CardHeader>
-            <CardContent>
-              <h2 className="font-bold text-lg text-gray-400">{project.title}</h2>
-              <p className="dark:text-white-900">{project.description}</p>
-              <p className="dark:text-white-900">Priority: {project.priority}</p>
-              <p className="dark:text-white-900">Tasks: {project.tasks} | Active: {project.activeTasks}</p>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button className="bg-violet-500 text-white px-3 py-1 rounded mr-2" onClick={() => openEditModal(project) }>Edit</Button>
-              <Button className="bg-red-500 text-white px-3 py-1 rounded" onClick={() => openDeleteModal(project.id)}>Delete</Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-      <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
-      <SheetContent
-        side="right"
-        className="dark:bg-gray-900 bg-white overflow-y-auto dark:text-white p-6 w-full sm:max-w-[700px] h-[100vh] rounded-l-xl shadow-2xl"
-      > 
-      <button
-    onClick={() => setDetailsOpen(false)}
-    className="absolute top-4 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white transition"
-    aria-label="Close"
-  >
-    <X size={20} />
-  </button>
-        <div className="flex flex-col gap-4">
-          {/* Image */}
-          {selectedProject?.image && (
-            <img
-              src={selectedProject.image}
-              alt={selectedProject.title}
-              className="w-full h-48 object-cover rounded-xl shadow-md"
-            />
-          )}
-    
-          {/* Title & Description */}
-          <div>
-            <h2 className="text-2xl font-bold">{selectedProject?.title}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {selectedProject?.description}
-            </p>
-          </div>
-    
-          {/* Stats Badges */}
-          <div className="flex flex-wrap gap-2">
-            <Badge className="bg-blue-600 text-white">Tasks: {selectedProject?.tasks}</Badge>
-            <Badge className="bg-red-600 text-white">Active: {selectedProject?.activeTasks}</Badge>
-            <Badge className="bg-gray-700 text-white">
-              Date: {new Date().toLocaleDateString()}
-            </Badge>
-          </div>
-    
-          {/* Assigned Employees Table */}
-          {selectedProject?.assignees?.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                Assigned Employees:
-              </h3>
-              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Avatar</TableHead>
-                      <TableHead>Email</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedProject.assignees.map((employee, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{employee.name}</TableCell>
-                        <TableCell>
-                          <Avatar className="w-10 h-10">
-                            <AvatarImage
-                              src={employee.image || "https://via.placeholder.com/40"}
-                              alt={employee.name}
-                            />
-                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                        </TableCell>
-                        <TableCell>{employee.email}</TableCell>
-                      </TableRow>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Priority</p>
+                  <p className="font-medium capitalize">{selectedProject.priority}</p>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Start Date</p>
+                  <p className="font-medium">
+                    {new Date(selectedProject.startDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Total Tasks</p>
+                  <p className="font-medium">{selectedProject.tasks}</p>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Active Tasks</p>
+                  <p className="font-medium">{selectedProject.activeTasks}</p>
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div>
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm font-medium">Project Progress</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedProject.progress}%
+                  </p>
+                </div>
+                <Progress value={selectedProject.progress} className="h-2" />
+              </div>
+
+              {/* Links */}
+              {(selectedProject.liveLink || selectedProject.githubUrl) && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Project Links</p>
+                  <div className="flex gap-2">
+                    {selectedProject.githubUrl && (
+                      <Button asChild variant="outline">
+                        <a
+                          href={
+                            selectedProject.githubUrl.startsWith("http")
+                              ? selectedProject.githubUrl
+                              : `https://${selectedProject.githubUrl}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2"
+                        >
+                          <Github className="h-4 w-4" /> GitHub
+                        </a>
+                      </Button>
+                    )}
+                    {selectedProject.liveLink && (
+                      <Button asChild variant="outline">
+                        <a
+                          href={
+                            selectedProject.liveLink.startsWith("http")
+                              ? selectedProject.liveLink
+                              : `https://${selectedProject.liveLink}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2"
+                        >
+                          <ExternalLink className="h-4 w-4" /> Live Demo
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Assigned Employees */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-sm font-medium">Assigned Team</p>
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedEmployee}
+                      onValueChange={setSelectedEmployee}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select employee" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employees.map((employee) => (
+                          <SelectItem key={employee.id} value={employee.id}>
+                            {employee.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button 
+                      size="sm" 
+                      onClick={onAssignEmployee}
+                      disabled={!selectedEmployee || loading.actions}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" /> Assign
+                    </Button>
+                  </div>
+                </div>
+
+                {selectedProject?.assignees?.length > 0 ? (
+                  <div className="border rounded-lg divide-y">
+                    {selectedProject.assignees.map((employee) => (
+                      <div key={employee.id} className="p-3 flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={employee.image} />
+                          <AvatarFallback>
+                            {employee.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{employee.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {employee.email}
+                          </p>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-4 text-center text-muted-foreground">
+                    No team members assigned yet
+                  </div>
+                )}
+              </div>
+
+              {/* Bugs Section */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-sm font-medium">Project Bugs</p>
+                  <Dialog open={openBugModal} onOpenChange={setOpenBugModal}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" /> Add Bug
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Report New Bug</DialogTitle>
+                        <DialogDescription>
+                          Provide details about the bug you've encountered
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="bug-title" className="text-right">
+                            Title *
+                          </Label>
+                          <Input
+                            id="bug-title"
+                            placeholder="Bug title"
+                            value={newBug.title}
+                            onChange={(e) =>
+                              setNewBug({ ...newBug, title: e.target.value })
+                            }
+                            className="col-span-3"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="bug-description" className="text-right">
+                            Description *
+                          </Label>
+                          <Textarea
+                            id="bug-description"
+                            placeholder="Detailed description of the bug"
+                            value={newBug.description}
+                            onChange={(e) =>
+                              setNewBug({ ...newBug, description: e.target.value })
+                            }
+                            className="col-span-3"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setOpenBugModal(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={addBug}
+                          disabled={loading.actions}
+                        >
+                          {loading.actions ? "Submitting..." : "Report Bug"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {loading.bugs ? (
+                  <div className="space-y-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="border rounded-lg p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : bugs.length > 0 ? (
+                  <div className="border rounded-lg divide-y">
+                    {bugs.map((bug) => (
+                      <div key={bug.id} className="p-4">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-medium">{bug.title}</h4>
+                          {!bug.isResolved && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => resolveBug(bug.id)}
+                              disabled={loading.actions}
+                            >
+                              <Check className="h-4 w-4 mr-2" /> Resolve
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {bug.description}
+                        </p>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>
+                            {new Date(bug.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className={bug.isResolved ? "text-green-500" : "text-red-500"}>
+                            {bug.isResolved ? "Resolved" : "Unresolved"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-4 text-center text-muted-foreground">
+                    No bugs reported yet
+                  </div>
+                )}
               </div>
             </div>
           )}
-    
-          {/* Assign Employee Section */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
-              Assign Employee:
-            </h3>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Input
-                list="employee-list"
-                value={selectedEmployee}
-                onChange={(e) => setSelectedEmployee(e.target.value)}
-                placeholder="Enter Employee ID"
-                className="w-full sm:max-w-xs"
-              />
-              <datalist id="employee-list">
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </option>
-                ))}
-              </datalist>
-              <Button
-                onClick={onAssignEmployees}
-                disabled={!selectedEmployee}
-                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setDeleteModalOpen(false)}
               >
-                <UserPlus size={18} /> Assign
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteProject}
+                disabled={loading.actions}
+              >
+                {loading.actions ? "Deleting..." : "Delete Project"}
               </Button>
             </div>
           </div>
-    
-          {/* Links */} 
-     
-          {(selectedProject?.liveLink || selectedProject?.githubUrl) && (
-            <div className="flex flex-wrap gap-3 mt-4">
-  
-              {selectedProject?.liveLink && (
-                <Button
-                  asChild
-                  className="bg-violet-700 hover:bg-violet-800 text-white flex flex-col items-center gap-2"
-                >
-                  <a
-                    href={
-                      selectedProject.liveLink.startsWith("http")
-                        ? selectedProject.liveLink
-                        : `https://${selectedProject.liveLink}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink size={18} /> 
-                  </a>
-                </Button>
-              )}
-              {selectedProject?.githubUrl && (
-                <Button
-                  asChild
-                  className="bg-violet-700 hover:bg-violet-800 text-white flex items-center gap-2"
-                >
-                  <a
-                    href={
-                      selectedProject.githubUrl.startsWith("http")
-                        ? selectedProject.githubUrl
-                        : `https://${selectedProject.githubUrl}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Github size={18} /> 
-                  </a>
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Project Bugs</h1>
-
-      {/* Add Bug Button */}
-      <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="mb-4">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Bug
-          </Button>
-        </DialogTrigger>
-
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Bug</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Bug Title"
-              value={newBugTitle}
-              onChange={(e) => setNewBugTitle(e.target.value)}
-              className="w-full p-2 border rounded-md"
-            />
-            
-            <textarea
-              placeholder="Bug Description"
-              value={newBugDescription}
-              onChange={(e) => setNewBugDescription(e.target.value)}
-              className="w-full p-2 border rounded-md"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" onClick={() => setOpenModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={addBug}>Add Bug</Button>
-          </div>
         </DialogContent>
       </Dialog>
-
-      {loading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {bugs.map((bug) => (
-              <TableRow key={bug.id} className="hover:bg-gray-100 cursor-pointer">
-                <TableCell>{bug.title}</TableCell>
-                <TableCell>{bug.description}</TableCell>
-                <TableCell>
-                  <span className={bug.isResolved ? 'text-green-500' : 'text-red-500'}>
-                    {bug.isResolved ? 'Resolved' : 'Unresolved'}
-                  </span>
-                </TableCell>
-                <TableCell>{new Date(bug.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  {!bug.isResolved && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-green-600"
-                      onClick={() => resolveBug(bug.id)}
-                    >
-                      <Check className="mr-2" />
-                      Resolve
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
-      </SheetContent>
-    </Sheet>
-    
     </div>
   );
 }

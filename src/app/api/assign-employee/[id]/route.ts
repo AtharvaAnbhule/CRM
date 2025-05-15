@@ -14,6 +14,6 @@ export async function GET(req:Request, { params }:any) {
       return NextResponse.json(assignedEmployees.map(({ employee }) => employee), { status: 200 });
     } catch (error) {
       console.error('Error fetching assigned employees:', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+      return NextResponse.json({ error }, { status: 500 });
     }
   }

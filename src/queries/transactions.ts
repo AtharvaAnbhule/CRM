@@ -10,7 +10,7 @@ export async function getTransactionsForSubaccount(subaccountId: string) {
         subaccountid: subaccountId, // Filter by subaccountId
       },
       orderBy: {
-        createdAt: "desc", // Optionally order by creation date, descending (most recent first)
+        date: "desc", // Optionally order by creation date, descending (most recent first)
       },
     });
 
