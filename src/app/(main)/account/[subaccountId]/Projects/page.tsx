@@ -980,7 +980,7 @@ export default function Projects() {
                       <DialogHeader>
                         <DialogTitle>Report New Bug</DialogTitle>
                         <DialogDescription>
-                          Provide details about the bug you've encountered
+                          Provide details about the bug youve encountered
                         </DialogDescription>
                       </DialogHeader>
                       <div className="grid gap-4 py-4">
