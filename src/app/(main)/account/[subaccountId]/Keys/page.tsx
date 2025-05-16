@@ -68,7 +68,7 @@ export default function CodePreview() {
   return (
     <div
       className={clsx(
-        "min-h-screen max-h-screen overflow-y-auto p-4 md:p-10",
+        "min-h-screen max-h-screen overflow-y-auto p-4 md:p-10 m-5",
         darkMode ? "bg-black text-white" : "bg-white text-black"
       )}
       style={{ WebkitOverflowScrolling: 'touch' }}
@@ -117,10 +117,10 @@ export default function CodePreview() {
         <div className="flex flex-col space-y-1 min-w-[160px]">
           <Label className="dark:text-white">Font</Label>
           <Select value={font} onValueChange={setFont}>
-            <SelectTrigger className="bg-zinc-800 dark:text-white border-zinc-700">
+            <SelectTrigger className="bg-zinc-800 text-white border-zinc-700">
               <SelectValue placeholder="Font" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-800 dark:text-white">
+            <SelectContent className="bg-zinc-800 text-white">
               <SelectItem value="Anonymous Pro">Anonymous Pro</SelectItem>
               <SelectItem value="Consolas">Consolas</SelectItem>
               <SelectItem value="monospace">Monospace</SelectItem>
@@ -135,7 +135,7 @@ export default function CodePreview() {
             type="number"
             value={fontSize}
             onChange={(e) => setFontSize(parseInt(e.target.value))}
-            className="bg-zinc-800 dark:text-white border-zinc-700"
+            className="bg-zinc-800 text-white border-zinc-700"
           />
         </div>
 
@@ -145,7 +145,7 @@ export default function CodePreview() {
             type="number"
             value={padding}
             onChange={(e) => setPadding(parseInt(e.target.value))}
-            className="bg-zinc-800 dark:text-white border-zinc-700"
+            className="bg-zinc-800 text-white border-zinc-700"
           />
         </div>
 

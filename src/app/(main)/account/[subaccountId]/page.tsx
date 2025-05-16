@@ -36,7 +36,6 @@ import {
   Banknote,
   TrendingUp,
   Workflow,
-
   BarChart3,
   LineChart,
   FileText,
@@ -56,7 +55,6 @@ interface SubAccountPageIdProps {
 const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
   params,
 }) => {
-
   const { subaccountId } = params;
 
   if (!subaccountId) redirect("/account/unauthorized");
@@ -131,7 +129,6 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
   }
 
   const funnels = await getFunnels(subaccountId);
-
   const funnelPerformanceMetrics = funnels.map((funnel) => ({
     ...funnel,
     totalFunnelVisits: funnel.funnelPages.reduce(
@@ -140,208 +137,210 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
     ),
   }));
 
+  const projects = getProjectCount(subaccountId); 
+  const employees = getTotalEmployeesBySubaccountId(subaccountId); 
+  const tasks = getAllTaskCountToday(subaccountId); 
+  const transactions = await getTransactionsForSubaccount(subaccountId); 
 
-  // {!subAccountDetails.connectAccountId && (
-  //   <div className="absolute -top-10 -left-10 right-0 bottom-0 z-30 flex items-center justify-center backdrop-blur-md bg-background/50">
-  //     <Card>
-  //       <CardHeader>
-  //         <CardTitle>Connect Your Stripe</CardTitle>
-  //         <CardDescription>
-  //           You need to connect your stripe account to see metrics
-  //         </CardDescription>
-  //         <Link
-  //           href={`/subaccount/${subAccountDetails.id}/launchpad`}
-  //           className="p-2 w-fit bg-secondary text-white rounded-md flex items-center gap-2"
-  //         >
-  //           <Clipboard />
-  //           Launch Pad
-  //         </Link>
-  //       </CardHeader>
-  //     </Card>
-  //   </div>
-  // )} 
-
-   
-    const projects  = getProjectCount(subaccountId) ; 
-   const employees = getTotalEmployeesBySubaccountId(subaccountId) ; 
-
-const tasks = getAllTaskCountToday(subaccountId) ; 
-  const transactions  = await getTransactionsForSubaccount(subaccountId) ; 
   return (
     <BlurPage>
-  <div className="relative h-full px-4 py-6 space-y-8">
-    {/* Dashboard Heading */}
-    <h1 className="text-2xl xl:text-3xl font-semibold text-violet-600">
-      Dashboard Overview
-    </h1>
-
-    {/* Top Metrics */}
-    <div className="flex flex-col xl:flex-row gap-6">
-      <Card className="flex-1 relative border-violet-200 shadow-md">
-        <CardHeader className="flex items-center justify-between">
+      <div className="relative h-full px-4 py-6 space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardDescription className="text-violet-500">Number of Projects</CardDescription>
-            <CardTitle className="text-3xl align-center justify-items-center font-semibold">
-              Total:{projects}
-            </CardTitle>
-            <small className="text-xs text-muted">Year: {format(new Date(), "yyyy")}</small>
+            <h1 className="text-2xl md:text-3xl font-bold text-primary">Dashboard Overview</h1>
+            <p className="text-sm text-muted-foreground">
+              {format(new Date(), "MMMM d, yyyy")} • {subAccountDetails.name}
+            </p>
           </div>
-          <Banknote className="text-violet-500 w-6 h-6" />
-        </CardHeader>
-        <CardContent className="text-sm text-zinc-500">
-
-        </CardContent>
-      </Card>
- 
-
-
-      
-      <Card className="flex-1 relative border-violet-200 shadow-md">
-        <CardHeader className="flex items-center justify-between">
-          <div>
-            <CardDescription className="text-violet-500">Total Employees</CardDescription>
-            <CardTitle className="text-3xl font-semibold">
-              {employees}
-            </CardTitle>
-            <small className="text-xs text-muted">Year: {format(new Date(), "yyyy")}</small>
-          </div>
-          <TrendingUp className="text-violet-500 w-6 h-6" />
-        </CardHeader>
-        <CardContent className="text-sm text-zinc-500">
-          Projected Employees from current opportunities.
-        </CardContent>
-      </Card> 
-
-
-      <Card className="flex-1 relative border-violet-200 shadow-md">
-      <CardHeader className="flex items-center justify-between">
-        <div>
-          <CardDescription className="text-violet-500">Total Tasks Pending...</CardDescription>
-          <CardTitle className="text-3xl font-semibold">
-            {tasks}
-          </CardTitle>
-          <small className="text-xs text-muted">Year: {format(new Date(), "yyyy")}</small>
+          
+        
         </div>
-        <TrendingUp className="text-violet-500 w-6 h-6" />
-      </CardHeader>
-      <CardContent className="text-sm text-zinc-500">
-        Projected Tasks from current opportunities.
-      </CardContent>
-    </Card> 
 
-      {/* Changed "Pipeline" to "Workflow" */}
-      <Card className="xl:w-fit border-violet-200 shadow-md">
-        <CardHeader className="flex items-center justify-between">
-          <div>
-            <CardDescription className="text-violet-500">Workflow Value</CardDescription>
-            <PipelineValue subAccountId={subaccountId} />
-          </div>
-          <Workflow className="text-violet-500 w-6 h-6" />
-        </CardHeader>
-      </Card>
+        {/* Key Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Projects Card */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium text-muted-foreground">
+                Projects
+              </CardDescription>
+              <Banknote className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{projects}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Active projects this year
+              </p>
+            </CardContent>
+          </Card>
 
-      
-    </div>
+          {/* Employees Card */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium text-muted-foreground">
+                Employees
+              </CardDescription>
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{employees}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Total team members
+              </p>
+            </CardContent>
+          </Card>
 
-    <Card className="relative flex-1 border-violet-200 shadow-md">
-        <CardHeader className="flex items-center justify-between">
-          <CardDescription className="text-violet-500">Account Details</CardDescription>
-          <Info className="text-violet-500 w-6 h-6" />
-        </CardHeader>
-        <CardContent className=" text-muted flex flex-col font-bold text-lg">
+          {/* Tasks Card */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium text-muted-foreground">
+                Pending Tasks
+              </CardDescription>
+              <Workflow className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{tasks}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Tasks to complete today
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className=" text-zinc-500 text-xs">
-           Name-: {subAccountDetails.name}
-          </div> 
-          <div className=" text-zinc-500 text-xs">
-           Mission-: {subAccountDetails.mission}
-          </div> 
-          <div className=" text-zinc-500 text-xs">
-           
-          Country-: {subAccountDetails.country}
-          </div> 
-          <div className=" text-zinc-500 text-xs">
-           Goal-: {subAccountDetails.goal}
-          </div> 
-          <div className=" text-zinc-500 text-xs">
-           Vision-: {subAccountDetails.vision}
-          </div> 
-          <div className=" text-zinc-500 text-xs">
-           State-: {subAccountDetails.state}
-          </div>
-        </CardContent>
-      </Card>
+          {/* Pipeline Value Card */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 ">
+              <CardDescription className="text-sm font-medium text-muted-foreground">
+                Workflow Value
+              </CardDescription>
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <PipelineValue subAccountId={subaccountId} />
+              <p className="text-xs text-muted-foreground mt-1">
+                Current pipeline valuation
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-    {/* Charts Section */}
-    <div className="flex flex-col xl:flex-row gap-6">
-      
+        {/* Account Details & Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Account Details Card */}
+      <Card className="lg:col-span-1 hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Account Details</CardTitle>
+                <Info className="h-5 w-5 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Name</p>
+                <p className="font-medium">{subAccountDetails.name}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Mission</p>
+                <p className="font-medium">{subAccountDetails.mission}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Location</p>
+                <p className="font-medium">
+                  {subAccountDetails.state}, {subAccountDetails.country}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Vision</p>
+                <p className="font-medium">{subAccountDetails.vision}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Goal</p>
+                <p className="font-medium">{subAccountDetails.goal}</p>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card className="p-4 flex-1 border-violet-200 shadow-md">
-      <CardHeader className="flex items-center justify-between">
-        <CardTitle className="text-lg text-violet-600">Checkout Patterns</CardTitle>
-        <LineChart className="text-violet-500 w-6 h-6" />
-      </CardHeader>
-    
-      <AreaChart
-        className="text-sm stroke-violet-500"
-        data={
-          transactions.map((tx) => ({
-            created: new Date(tx.date).toLocaleDateString(), // X-axis
-            amount: tx.amount, // Y-axis
-          })) || []
-        }
-        index="created"
-        categories={["amount"]}
-        colors={["violet"]}
-        yAxisWidth={36}
-        showAnimation
-      /> 
-      </Card>
-    </div>
+          {/* Transaction Chart Card */}
+          <Card className="lg:col-span-2 hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Transaction Activity</CardTitle>
+                <LineChart className="h-5 w-5 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AreaChart
+                className="h-[300px]"
+                data={
+                  transactions.map((tx) => ({
+                    created: new Date(tx.date).toLocaleDateString(),
+                    amount: tx.amount,
+                  })) || []
+                }
+                index="created"
+                categories={["amount"]}
+                colors={["primary"]}
+                yAxisWidth={60}
+                showAnimation
+              />
+            </CardContent>
+          </Card>
+        </div>
 
-    {/* Transaction History */}
-    <div className="flex flex-col xl:flex-row gap-6">
-      <Card className="p-4 flex-1 h-[450px] overflow-auto relative border-violet-200 shadow-md">
-        <CardHeader className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg text-violet-600">
-            Transaction History
-            <BadgeDelta
-              className="rounded-xl bg-transparent"
-              deltaType="moderateIncrease"
-              isIncreasePositive
-              size="xs"
-            >
-              +12.3%
-            </BadgeDelta>
-          </CardTitle>
-          <FileText className="text-violet-500 w-6 h-6" />
-        </CardHeader>
-        <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Transaction ID</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Created At</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableCell>{transaction.id}</TableCell>
-              <TableCell>${transaction.amount.toFixed(2)}</TableCell>
-              <TableCell>{transaction.type}</TableCell>
-              <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      </Card>
-    </div>
-  </div>
-</BlurPage>
-
-
+        {/* Transaction History Table */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Recent Transactions</CardTitle>
+              <div className="flex items-center gap-2">
+                <BadgeDelta
+                  deltaType="moderateIncrease"
+                  isIncreasePositive
+                  size="sm"
+                >
+                  +12.3%
+                </BadgeDelta>
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions.map((transaction) => (
+                    <TableRow key={transaction.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">
+                        {transaction.id.slice(0, 8)}...
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${transaction.amount.toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {transaction.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(transaction.date), "MMM d, yyyy")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </BlurPage>
   );
 };
 
