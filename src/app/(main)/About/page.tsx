@@ -129,9 +129,9 @@ export default function AboutPage() {
                     <h4 className="mt-6">Creating Your First Automation</h4>
                     <ol className="list-decimal pl-5 space-y-2">
                       <li>Navigate to Automation → Create New Workflow</li>
-                      <li>Select your trigger (e.g., "New contact added", "Deal stage changed")</li>
-                      <li>Set conditions to filter which items should trigger (e.g., "Only if contact is from USA")</li>
-                      <li>Add one or more actions (e.g., "Send email", "Create task", "Update record")</li>
+                      <li>Select your trigger (e.g., &quot;New contact added&quot;, &quot;Deal stage changed&quot;)</li>
+                      <li>Set conditions to filter which items should trigger (e.g., &quot;Only if contact is from USA&quot;)</li>
+                      <li>Add one or more actions (e.g., &quot;Send email&quot;, &quot;Create task&quot;, &quot;Update record&quot;)</li>
                       <li>Configure delays between steps if needed</li>
                       <li>Test your workflow with sample data</li>
                       <li>Save and activate the automation</li>
@@ -146,15 +146,15 @@ export default function AboutPage() {
                     <ol className="list-decimal pl-5 space-y-2">
                       <li><strong>Component palette (left sidebar):</strong> Contains all available building blocks organized by category (forms, displays, charts, etc.)</li>
                       <li><strong>Canvas (center area):</strong> Where you drag components to build your interface with real-time preview</li>
-                      <li><strong>Properties panel (right sidebar):</strong> Configure each component's settings, styling, and data bindings</li>
+                      <li><strong>Properties panel (right sidebar):</strong> Configure each component&apos;s settings, styling, and data bindings</li>
                     </ol>
 
                     <h4 className="mt-6">Creating a Custom Page</h4>
                     <ol className="list-decimal pl-5 space-y-2">
-                      <li>Click "New Page" in the builder dashboard</li>
+                      <li>Click &quot;New Page&quot; in the builder dashboard</li>
                       <li>Select from starter templates or begin with a blank canvas</li>
                       <li>Drag components from the palette to your desired locations</li>
-                      <li>Configure each component's properties and data sources</li>
+                      <li>Configure each component&apos;s properties and data sources</li>
                       <li>Set responsive breakpoints for different device sizes</li>
                       <li>Define page-level settings including:
                         <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -412,7 +412,7 @@ export default function AboutPage() {
                       <p className="text-sm text-muted-foreground">{testimonial.title}, {testimonial.company}</p>
                     </div>
                   </div>
-                  <p className="text-sm">"{testimonial.quote}"</p>
+                  <p className="text-sm">&quot;{testimonial.quote}&quot;</p>
                   <div className="flex mt-4">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} filled={i < testimonial.rating} />
@@ -652,7 +652,7 @@ const testimonials = [
     initials: "ER",
     title: "Marketing Manager",
     company: "BrandVision",
-    quote: "Finally a CRM that actually gets adopted by our team because its so intuitive and well-designed.",
+    quote: "Finally a CRM that actually gets adopted by our team because it&apos;s so intuitive and well-designed.",
     rating: 4
   }
 ]
