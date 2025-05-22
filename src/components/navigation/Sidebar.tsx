@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = async ({ id, type }) => {
 
   if (!details) return null;
 
-  let sideBarLogo: string = user.agency.agencyLogo || "/assets/logo.png";
+  let sideBarLogo: string = user.agency.agencyLogo || "/assets/fire.png";
 
   if (!isWhiteLabelAgency && type === "subaccount") {
     const subAccountLogo = user?.agency.subAccounts.find(

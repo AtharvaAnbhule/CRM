@@ -34,7 +34,7 @@ const MobileNav = (props: Props) => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/assets/logo.png"
+              src="/assets/fire.png"
               width={32}
               height={32}
               alt="Workeloo"
