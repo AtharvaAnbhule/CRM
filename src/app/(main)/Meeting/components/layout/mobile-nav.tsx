@@ -23,13 +23,13 @@ const MobileNav = (props: Props) => {
             width={36}
             height={36}
             alt="hamburger icon"
-            className="cursor-pointer sm:hidden bg-blue-200 dark:bg-none"
+            className="cursor-pointer sm:hidden bg-blue-200 dark:bg-transparent"
           />
         </SheetTrigger>
 
         <SheetContent
           side="left"
-          className="border-none bg-white dark:bg-dark-1 text-black dark:text-white"
+          className="border-none  dark:bg-dark-1 text-black dark:text-white"
         >
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
@@ -58,7 +58,7 @@ const MobileNav = (props: Props) => {
                         className={cn(
                           "flex gap-4 items-center p-4 rounded-lg justify-start transition-colors",
                           {
-                            "bg-blue-1 text-white": isActive,
+                            "bg-blue-1 dark:text-white": isActive,
                             "hover:bg-gray-100 dark:hover:bg-dark-2": !isActive,
                           }
                         )}

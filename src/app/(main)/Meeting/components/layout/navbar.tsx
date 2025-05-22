@@ -14,7 +14,7 @@ const Navbar = (props: Props) => {
         <p className="text-[26px] font-extrabold dark:text-white max-sm:hidden">Workeloo</p>
       </Link>
 
-      <div className="flex-between gap-5">
+      <div className="flex flex-row gap-5">
         <SignedIn>
           <UserButton />
         </SignedIn>
