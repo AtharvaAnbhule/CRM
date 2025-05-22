@@ -122,7 +122,7 @@ export default function AboutPage() {
                       </div>
                       <div className="p-4 border rounded-lg">
                         <h5 className="font-medium">Task Reminders</h5>
-                        <p>Send reminder emails 24 hours before a task deadline if it's not marked as complete, escalating to the manager if still incomplete after 48 hours.</p>
+                        <p>Send reminder emails 24 hours before a task deadline if its not marked as complete, escalating to the manager if still incomplete after 48 hours.</p>
                       </div>
                     </div>
 
@@ -652,7 +652,7 @@ const testimonials = [
     initials: "ER",
     title: "Marketing Manager",
     company: "BrandVision",
-    quote: "Finally a CRM that actually gets adopted by our team because it's so intuitive and well-designed.",
+    quote: "Finally a CRM that actually gets adopted by our team because its so intuitive and well-designed.",
     rating: 4
   }
 ]
