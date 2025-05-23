@@ -78,6 +78,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.0.0-rc22",
     "framer-motion": "^11.0.8",
+    "ical-generator": "^9.0.0",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

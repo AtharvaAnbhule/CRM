@@ -15,7 +15,7 @@ import {
   Role,
 } from "@prisma/client";
 
-import { ChevronsUpDown, Compass, LogOut, Menu, MessageSquareQuote, PlaneIcon, PlusCircle, SendIcon, User2, UserCircle, X } from "lucide-react";
+import { ChevronsUpDown, Compass, FerrisWheel, LogOut, Menu, MessageSquareQuote, PlaneIcon, PlusCircle, SendIcon, User2, UserCircle, X } from "lucide-react";
 
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
@@ -353,6 +353,27 @@ className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:tex
     >
     <SendIcon/>
     < span > Email-marketing </span>
+    </Button>
+    
+  </> )} 
+  {
+  !window.location.pathname.includes("account") && (<><Button onClick={
+    () => {
+      const pathname = window.location.pathname;
+      const pathSegments = pathname.split("/");
+      const agencyIndex = pathSegments.indexOf("company");
+
+      if (agencyIndex !== -1 && pathSegments.length > agencyIndex + 1) {
+        const agencyId = pathSegments[agencyIndex + 1];
+        router.push(`/company/${agencyId}/Event`);
+      }
+    }
+  }
+  variant = "ghost"
+  className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3"
+    >
+    <FerrisWheel/>
+    < span > Organize Events </span>
     </Button>
     
   </> )}
