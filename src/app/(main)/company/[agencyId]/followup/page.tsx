@@ -46,7 +46,7 @@ export default  function FollowUpWriter() {
     },
   });
 
- const generateFollowUps = async (data: FollowUpFormValues) => {
+const generateFollowUps = async (data: FollowUpFormValues) => {
   setIsGenerating(true);
   setMessages([]);
   
@@ -84,7 +84,8 @@ export default  function FollowUpWriter() {
     - No additional text or explanations
     - All property names must be double-quoted
     - No trailing commas
-    - Escape double quotes in text with backslash`;
+    - Escape special characters
+    - Ensure valid JSON control characters`;
 
     const response = await fetch("https://api.cohere.ai/v1/generate", {
       method: "POST",
@@ -95,7 +96,7 @@ export default  function FollowUpWriter() {
       body: JSON.stringify({
         prompt,
         max_tokens: 1000,
-        temperature: 0.5, // Lower for more consistent JSON
+        temperature: 0.3, // Lower temperature for more consistent JSON
         stop_sequences: ['\n\n```'] // Stop at code blocks
       }),
     });
@@ -103,60 +104,88 @@ export default  function FollowUpWriter() {
     if (!response.ok) throw new Error(`API request failed: ${response.status}`);
 
     const result = await response.json();
-    const rawText = result.generations[0].text.trim();
+    let rawText = result.generations[0].text.trim();
     console.log("Raw API response:", rawText); // Debugging
 
-    // Parse with multiple fallback strategies
-    let parsed: FollowUpMessage[] = [];
-    const parseAttempts = [
-      // Attempt 1: Direct parse
-      () => JSON.parse(rawText),
-      
-      // Attempt 2: Extract from markdown
-      () => {
-        const mdMatch = rawText.match(/```(?:json)?\n([\s\S]+?)\n```/);
-        return JSON.parse(mdMatch ? mdMatch[1] : rawText);
-      },
-      
-      // Attempt 3: Find first [ and last ]
-      () => {
-        const start = rawText.indexOf('[');
-        const end = rawText.lastIndexOf(']') + 1;
-        return JSON.parse(rawText.slice(start, end));
-      },
-      
-      // Attempt 4: Manual cleanup
-      () => {
-        let cleaned = rawText
-          .replace(/'/g, '"')
-          .replace(/(\w+):/g, '"$1":')
-          .replace(/:\s*([^"{\[\d][^,}\]]*)/g, ': "$1"')
-          .replace(/,\s*([}\]])/g, '$1');
-        return JSON.parse(cleaned);
-      }
-    ];
-
-    // Try each parse method until one works
-    for (const attempt of parseAttempts) {
+    // Enhanced JSON cleaning with multiple strategies
+    const extractJson = (text: string): string | null => {
+      // Strategy 1: Direct JSON parse
       try {
-        parsed = attempt();
-        if (Array.isArray(parsed)) break;
+        JSON.parse(text);
+        return text;
       } catch (e) {
-        console.log(`Parse attempt failed: ${e}`);
+        console.log("Direct parse failed");
       }
+
+      // Strategy 2: Extract from markdown code blocks
+      const codeBlockMatch = text.match(/```(?:json)?\n([\s\S]+?)\n```/);
+      if (codeBlockMatch) {
+        try {
+          JSON.parse(codeBlockMatch[1]);
+          return codeBlockMatch[1];
+        } catch (e) {
+          console.log("Markdown extraction failed");
+        }
+      }
+
+      // Strategy 3: Find first [ and last ]
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      if (jsonStart >= 0 && jsonEnd > 0) {
+        const potentialJson = text.slice(jsonStart, jsonEnd);
+        try {
+          JSON.parse(potentialJson);
+          return potentialJson;
+        } catch (e) {
+          console.log("Bracket extraction failed");
+        }
+      }
+
+      // Strategy 4: Aggressive cleaning
+      try {
+        const cleaned = text
+          .replace(/[\u0000-\u001F]/g, '') // Remove control chars
+          .replace(/'/g, '"') // Single to double quotes
+          .replace(/(\w+)\s*:/g, '"$1":') // Quote property names
+          .replace(/:\s*([^"{\[\d][^,}\]]*?)([,}\]])/g, ': "$1"$2') // Quote values
+          .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
+          .replace(/\\"/g, '"') // Unescape quotes
+          .replace(/\n/g, '\\n') // Escape newlines
+          .replace(/\t/g, '\\t'); // Escape tabs
+        
+        JSON.parse(cleaned);
+        return cleaned;
+      } catch (e) {
+        console.log("Aggressive cleaning failed");
+        return null;
+      }
+    };
+
+    const jsonString = extractJson(rawText);
+    if (!jsonString) {
+      throw new Error("Could not extract valid JSON from response");
     }
 
-    if (!Array.isArray(parsed)) {
+    // Final parse with validation
+    let parsed: any;
+    try {
+      parsed = JSON.parse(jsonString);
+      if (!Array.isArray(parsed)) {
+        throw new Error("Response is not an array");
+      }
+    } catch (e) {
+      console.error("Final parse error:", e);
+      console.log("Final JSON attempt:", jsonString);
       throw new Error("Could not parse valid message array");
     }
 
     // Validate and transform messages
     const validatedMessages = parsed.map((msg: any) => ({
-      text: msg.text?.toString() || "",
+      text: String(msg.text || "").replace(/\\n/g, '\n'),
       tone: ["friendly","professional","urgent"].includes(msg.tone?.toLowerCase()) 
-        ? msg.tone.toLowerCase() 
+        ? msg.tone.toLowerCase() as "friendly" | "professional" | "urgent"
         : "friendly",
-      reasoning: msg.reasoning?.toString() || "No reasoning provided"
+      reasoning: String(msg.reasoning || "No reasoning provided").replace(/\\n/g, '\n')
     })).slice(0, 3); // Ensure exactly 3 messages
 
     setMessages(validatedMessages);
