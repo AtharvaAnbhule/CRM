@@ -15,7 +15,7 @@ import {
   Role,
 } from "@prisma/client";
 
-import { ChevronsUpDown, Compass, FerrisWheel, LogOut, Menu, MessageSquareQuote, PlaneIcon, PlusCircle, Receipt, SendIcon, User2, UserCircle, X } from "lucide-react";
+import { ChevronsUpDown, Compass, FerrisWheel, FolderClock, HelpCircle, LogOut, Menu, MessageSquareQuote, PlaneIcon, PlaneTakeoffIcon, PlusCircle, Receipt, SendIcon, User2, UserCircle, X } from "lucide-react";
 
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
@@ -398,8 +398,71 @@ className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:tex
     < span > Generate Invoices</span>
     </Button>
     
-  </> )}
-<div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r bottom-3 from-pink-400 to-purple-600 rounded-2xl shadow-lg text-white mx-auto" >
+  </> )} 
+  {
+  !window.location.pathname.includes("account") && (<><Button onClick={
+    () => {
+      const pathname = window.location.pathname;
+      const pathSegments = pathname.split("/");
+      const agencyIndex = pathSegments.indexOf("company");
+
+      if (agencyIndex !== -1 && pathSegments.length > agencyIndex + 1) {
+        const agencyId = pathSegments[agencyIndex + 1];
+        router.push(`/company/${agencyId}/goals`);
+      }
+    }
+  }
+  variant = "ghost"
+  className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3"
+    >
+    <HelpCircle/>
+    < span > Micro Helps</span>
+    </Button>
+    
+  </> ) } 
+   {
+  !window.location.pathname.includes("account") && (<><Button onClick={
+    () => {
+      const pathname = window.location.pathname;
+      const pathSegments = pathname.split("/");
+      const agencyIndex = pathSegments.indexOf("company");
+
+      if (agencyIndex !== -1 && pathSegments.length > agencyIndex + 1) {
+        const agencyId = pathSegments[agencyIndex + 1];
+        router.push(`/company/${agencyId}/smart`);
+      }
+    }
+  }
+  variant = "ghost"
+  className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3"
+    >
+    <PlaneTakeoffIcon/>
+    < span > Smart Personas</span>
+    </Button>
+    
+  </> ) } 
+   {
+  !window.location.pathname.includes("account") && (<><Button onClick={
+    () => {
+      const pathname = window.location.pathname;
+      const pathSegments = pathname.split("/");
+      const agencyIndex = pathSegments.indexOf("company");
+
+      if (agencyIndex !== -1 && pathSegments.length > agencyIndex + 1) {
+        const agencyId = pathSegments[agencyIndex + 1];
+        router.push(`/company/${agencyId}/followup`);
+      }
+    }
+  }
+  variant = "ghost"
+  className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3"
+    >
+    <FolderClock/>
+    < span > AI FollowUp</span>
+    </Button>
+    
+  </> ) } 
+ <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r bottom-3 from-pink-400 to-purple-600 rounded-2xl shadow-lg text-white mx-auto" >
   <h2 className="text-lg font-semibold text-center" >
     Upgrade to < span className = "font-bold" > PRO </span> to get access to all Features!
       </h2>
