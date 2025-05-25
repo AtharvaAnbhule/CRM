@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,13 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/app/(main)/Meeting/components/ui/use-toast";
 import { Copy, Loader2, MoreVertical, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 
-// Schema for form validation
 const personaSchema = z.object({
   customerData: z.string().min(10, "Please enter at least 10 characters"),
   industry: z.string().optional(),
@@ -51,9 +49,8 @@ export default function PersonaBuilder() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [activePersona, setActivePersona] = useState<number | null>(null);
-//   const NEXT_PUBLIC_COHERE_API_KEY = "rI8PURz0a6JliOwgrLiILRJNHdNgXlFQzZfrShhi" ; 
 
-  const form = useForm<PersonaFormValues>({ 
+  const form = useForm<PersonaFormValues>({
     resolver: zodResolver(personaSchema),
     defaultValues: {
       customerData: "",
@@ -62,163 +59,146 @@ export default function PersonaBuilder() {
     },
   });
 
- const generatePersonas = async (data: PersonaFormValues) => {
-  setIsGenerating(true);
-  setGenerationProgress(0);
-  setPersonas([]);
-  
-  try {
-    setGenerationProgress(20);
-
-    const response = await fetch('https://api.cohere.ai/v1/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_COHERE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        prompt: `Generate ${data.personaCount} detailed customer personas in STRICT JSON format based on:
-        
-        Customer Data: ${data.customerData}
-        ${data.industry ? `Industry: ${data.industry}` : ''}
-
-        Return ONLY a valid JSON array where each object contains:
-        - name: string
-        - jobTitle: string
-        - age: number (25-65)
-        - location: string
-        - bio: string
-        - painPoints: string[] (3 items)
-        - goals: string[] (3 items)
-        - personalityTraits: string[] (3 items)
-        - preferredChannels: string[] (2 items)
-        - buyerStage: "awareness"|"consideration"|"decision"
-        - outreachTone: string
-        - idealOffer: string
-        - tags: string[] (3 items)
-        - avatarSeed: string
-
-        IMPORTANT: Only return the raw JSON array with no additional text, explanations, or markdown formatting.`,
-        max_tokens: 2000,
-        temperature: 0.5, // Lower temperature for more consistent JSON
-        stop_sequences: ['\n\n'],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-
-    const result = await response.json();
-    setGenerationProgress(60);
+  const generatePersonas = async (data: PersonaFormValues) => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    setPersonas([]);
 
     try {
-      let generatedText = result.generations[0]?.text?.trim() || '';
-      console.log("Raw AI response:", generatedText); // Debugging
+      setGenerationProgress(20);
 
-      // Attempt to extract JSON from various possible formats
-      let jsonString = generatedText;
+      const response = await fetch('https://api.cohere.ai/v1/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_COHERE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          prompt: `Generate ${data.personaCount} detailed customer personas in STRICT JSON format based on:
+          
+Customer Data: ${data.customerData}
+${data.industry ? `Industry: ${data.industry}` : ''}
 
-      // Case 1: Pure JSON
-      if (jsonString.startsWith('[') && jsonString.endsWith(']')) {
-        // Already looks like JSON
-      } 
-      // Case 2: Markdown code block
-      else if (jsonString.includes('```json')) {
-        jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
-      }
-      // Case 3: Markdown without json specifier
-      else if (jsonString.includes('```')) {
-        jsonString = jsonString.replace(/```/g, '').trim();
-      }
+Return ONLY a valid JSON array where each object contains:
+- name: string
+- jobTitle: string
+- age: number (25-65)
+- location: string
+- bio: string
+- painPoints: string[] (3 items)
+- goals: string[] (3 items)
+- personalityTraits: string[] (3 items)
+- preferredChannels: string[] (2 items)
+- buyerStage: "awareness"|"consideration"|"decision"
+- outreachTone: string
+- idealOffer: string
+- tags: string[] (3 items)
+- avatarSeed: string
 
-      // Remove any text before the first [ and after the last ]
-      const jsonStart = jsonString.indexOf('[');
-      const jsonEnd = jsonString.lastIndexOf(']') + 1;
-      
-      if (jsonStart === -1 || jsonEnd === -1) {
-        throw new Error("No JSON array found in response");
-      }
-
-      jsonString = jsonString.slice(jsonStart, jsonEnd);
-
-      // Fix common JSON formatting issues
-      jsonString = jsonString
-        .replace(/(\w)\s*:\s*/g, '"$1": ') // Add quotes around property names
-        .replace(/'/g, '"')               // Replace single quotes with double
-        .replace(/,\s*([}\]])/g, '$1')    // Remove trailing commas
-        .replace(/(\w)\s*:\s*([^"\s{[])/g, '"$1": "$2"') // Wrap unquoted string values
-        .replace(/:\s*"([^"]*?)"\s*([,}])/g, (match, p1, p2) => {
-          // Handle escaped quotes within strings
-          return `: "${p1.replace(/"/g, '\\"')}"${p2}`;
-        });
-
-      console.log("Cleaned JSON string:", jsonString); // Debugging
-
-      const parsedPersonas = JSON.parse(jsonString);
-      
-      // Validate and transform the parsed data
-      const validatedPersonas = parsedPersonas.map((persona: any) => ({
-        name: String(persona.name || "Unknown"),
-        jobTitle: String(persona.jobTitle || "Unknown"),
-        age: Number(persona.age) || 30,
-        location: String(persona.location || "Unknown"),
-        bio: String(persona.bio || ""),
-        painPoints: Array.isArray(persona.painPoints) 
-          ? persona.painPoints.map(String) 
-          : [],
-        goals: Array.isArray(persona.goals) 
-          ? persona.goals.map(String) 
-          : [],
-        personalityTraits: Array.isArray(persona.personalityTraits) 
-          ? persona.personalityTraits.map(String) 
-          : [],
-        preferredChannels: Array.isArray(persona.preferredChannels) 
-          ? persona.preferredChannels.map(String) 
-          : [],
-        buyerStage: ["awareness", "consideration", "decision"].includes(
-          String(persona.buyerStage).toLowerCase()
-        ) 
-          ? String(persona.buyerStage).toLowerCase() 
-          : "awareness",
-        outreachTone: String(persona.outreachTone || "Professional"),
-        idealOffer: String(persona.idealOffer || ""),
-        tags: Array.isArray(persona.tags) 
-          ? persona.tags.map(String) 
-          : [],
-        avatarSeed: String(persona.avatarSeed || persona.name || "default"),
-      }));
-
-      setPersonas(validatedPersonas);
-      setActivePersona(0);
-      
-      toast({
-        title: "Success!",
-        description: `${validatedPersonas.length} personas generated`,
+IMPORTANT: Only return the raw JSON array with no additional text, explanations, or markdown formatting.`,
+          max_tokens: 2000,
+          temperature: 0.5,
+          stop_sequences: ['\n\n'],
+        }),
       });
-    } catch (e) {
-      console.error("Failed to parse personas:", e);
-      console.log("Raw response text:", result.generations[0]?.text);
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      setGenerationProgress(60);
+
+      try {
+        let generatedText = result.generations[0]?.text?.trim() || '';
+        let jsonString = generatedText;
+
+        // Clean up the JSON string
+        if (jsonString.includes('```json')) {
+          jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
+        }
+        else if (jsonString.includes('```')) {
+          jsonString = jsonString.replace(/```/g, '').trim();
+        }
+
+        const jsonStart = jsonString.indexOf('[');
+        const jsonEnd = jsonString.lastIndexOf(']') + 1;
+
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error("No JSON array found in response");
+        }
+
+        jsonString = jsonString.slice(jsonStart, jsonEnd)
+          .replace(/(\w)\s*:\s*/g, '"$1": ')
+          .replace(/'/g, '"')
+          .replace(/,\s*([}\]])/g, '$1')
+          .replace(/(\w)\s*:\s*([^"\s{[])/g, '"$1": "$2"')
+          .replace(/:\s*"([^"]*?)"\s*([,}])/g, (match, p1, p2) => {
+            return `: "${p1.replace(/"/g, '\\"')}"${p2}`;
+          });
+
+        const parsedPersonas = JSON.parse(jsonString);
+
+        const validatedPersonas = parsedPersonas.map((persona: any) => ({
+          name: String(persona.name || "Unknown"),
+          jobTitle: String(persona.jobTitle || "Unknown"),
+          age: Number(persona.age) || 30,
+          location: String(persona.location || "Unknown"),
+          bio: String(persona.bio || ""),
+          painPoints: Array.isArray(persona.painPoints)
+            ? persona.painPoints.map(String)
+            : [],
+          goals: Array.isArray(persona.goals)
+            ? persona.goals.map(String)
+            : [],
+          personalityTraits: Array.isArray(persona.personalityTraits)
+            ? persona.personalityTraits.map(String)
+            : [],
+          preferredChannels: Array.isArray(persona.preferredChannels)
+            ? persona.preferredChannels.map(String)
+            : [],
+          buyerStage: ["awareness", "consideration", "decision"].includes(
+            String(persona.buyerStage).toLowerCase()
+          )
+            ? String(persona.buyerStage).toLowerCase() as "awareness" | "consideration" | "decision"
+            : "awareness",
+          outreachTone: String(persona.outreachTone || "Professional"),
+          idealOffer: String(persona.idealOffer || ""),
+          tags: Array.isArray(persona.tags)
+            ? persona.tags.map(String)
+            : [],
+          avatarSeed: String(persona.avatarSeed || persona.name || "default"),
+        }));
+
+        setPersonas(validatedPersonas);
+        setActivePersona(0);
+
+        toast({
+          title: "Success!",
+          description: `${validatedPersonas.length} personas generated`,
+        });
+      } catch (e) {
+        console.error("Failed to parse personas:", e);
+        toast({
+          title: "Parsing Error",
+          description: "Couldn't parse the AI response. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+      setGenerationProgress(100);
+    } catch (error) {
+      console.error("Generation failed:", error);
       toast({
-        title: "Parsing Error",
-        description: "Couldn't parse the AI response. Please try again.",
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "API request failed",
         variant: "destructive",
       });
+      setGenerationProgress(0);
+    } finally {
+      setIsGenerating(false);
     }
-
-    setGenerationProgress(100);
-  } catch (error) {
-    console.error("Generation failed:", error);
-    toast({
-      title: "Generation Failed",
-      description: error instanceof Error ? error.message : "API request failed",
-      variant: "destructive",
-    });
-    setGenerationProgress(0);
-  } finally {
-    setIsGenerating(false);
-  }
-};
+  };
 
   const copyPersonaToClipboard = (persona: Persona) => {
     const text = `**${persona.name}** - ${persona.jobTitle}
@@ -261,7 +241,7 @@ export default function PersonaBuilder() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="customerData">Customer Data*</Label>
+                  <Label htmlFor="customerData">Customer Data *</Label>
                   <Textarea
                     id="customerData"
                     placeholder="Paste customer names, emails, companies, or any relevant data..."
@@ -363,7 +343,11 @@ export default function PersonaBuilder() {
                       <p className="text-muted-foreground">{personas[activePersona].jobTitle}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => copyPersonaToClipboard(personas[activePersona])}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyPersonaToClipboard(personas[activePersona])}
+                      >
                         <Copy className="mr-2 h-4 w-4" />
                         Copy
                       </Button>
@@ -512,10 +496,10 @@ export default function PersonaBuilder() {
                   <div className="space-y-2">
                     <p className="font-medium">Call Script</p>
                     <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-                      <p><strong>Opening:</strong> "Hi {personas[activePersona].name.split(" ")[0]}, this is [Your Name] from [Your Company]. How are you today?"</p>
-                      <p><strong>Value Prop:</strong> "We specialize in helping {personas[activePersona].jobTitle.toLowerCase()}s like yourself {personas[activePersona].goals[2]?.toLowerCase()} by addressing {personas[activePersona].painPoints[1]?.toLowerCase()}."</p>
-                      <p><strong>Question:</strong> "Does this sound like something you've been looking for?"</p>
-                      <p><strong>Next Steps:</strong> "I'd love to show you how we've helped similar {personas[activePersona].jobTitle.toLowerCase()}s - would now be a good time or should we schedule something?"</p>
+                      <p><strong>Opening:</strong> &quot;Hi {personas[activePersona].name.split(" ")[0]}, this is [Your Name] from [Your Company]. How are you today?&quot;</p>
+                      <p><strong>Value Prop:</strong> &quot;We specialize in helping {personas[activePersona].jobTitle.toLowerCase()}s like yourself {personas[activePersona].goals[2]?.toLowerCase()} by addressing {personas[activePersona].painPoints[1]?.toLowerCase()}.&quot;</p>
+                      <p><strong>Question:</strong> &quot;Does this sound like something you&apos;ve been looking for?&quot;</p>
+                      <p><strong>Next Steps:</strong> &quot;I&apos;d love to show you how we&apos;ve helped similar {personas[activePersona].jobTitle.toLowerCase()}s - would now be a good time or should we schedule something?&quot;</p>
                     </div>
                   </div>
                 </CardContent>
