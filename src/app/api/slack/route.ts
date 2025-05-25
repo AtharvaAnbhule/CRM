@@ -4,8 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
 export async function GET(req: NextRequest) {
-  const code = req.nextUrl.searchParams.get("code");
-
+   const url = req.nextUrl;
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  console.log(code) ; 
   if (!code) {
     return NextResponse.json({ error: "Missing code" }, { status: 400 });
   }
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest) {
         client_id: process.env.SLACK_CLIENT_ID!,
         client_secret: process.env.SLACK_CLIENT_SECRET!,
         code,
-        redirect_uri: "https://www.workeloo.com/api/slack", // Must match Slack app settings
+        redirect_uri: "https://localhost:3000/api/slack", // Must match Slack app settings
       },
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -33,7 +35,7 @@ export async function GET(req: NextRequest) {
     // Optional: Store token in DB here
 
     // Redirect after success
-    return NextResponse.redirect("https://www.workeloo.com/company?connected=success");
+    return NextResponse.redirect("https://localhost:3000/company?connected=success");
   } catch (err: any) {
     console.error("Slack OAuth Error:", err.response?.data || err.message);
     return NextResponse.json({ error: "OAuth failed" }, { status: 500 });
