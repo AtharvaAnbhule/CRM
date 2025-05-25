@@ -161,21 +161,7 @@ const AgencyIdPage: React.FC<AgencyIdPageProps> = async ({ params }) => {
           </Card>
         </div>
   
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="relative">
-            <CardHeader>
-              <CardDescription>Annual Revenue</CardDescription>
-              <CardTitle className="text-4xl">{"$0.0"}</CardTitle>
-              <small className="text-xs text-muted-foreground">Year {format(new Date(), "yyyy")}</small>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Based on aggregated data from all payment sources.
-            </CardContent>
-            <DollarSign className="absolute right-4 top-4 text-muted-foreground" />
-          </Card>
-  
-          
-        </div>
+      
   
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card className="relative">
