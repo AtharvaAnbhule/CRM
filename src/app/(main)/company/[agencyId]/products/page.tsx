@@ -216,7 +216,7 @@ export default function ProductsTable() {
           </DialogContent>
         </Dialog>
       </div>
-<p>The payment for the product will be provided by Team Workeloo with 12 hours or earlier for more information reach out to atharvaanbhule@gmail.com.</p>
+<p>The payment for the product will be provided by Team Workeloo with 12 hours or earlier for more information reach out to workeloopvt@gmail.com.</p>
       <Table className="border rounded-md shadow-sm">
         <TableHeader>
           <TableRow>

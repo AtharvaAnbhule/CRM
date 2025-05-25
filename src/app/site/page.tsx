@@ -8,6 +8,7 @@ import { StickyScroll } from "@/components/modules/landing/StickyScrollReveal";
 import { BackgroundBeams } from "@/components/modules/landing/BackgroundBeams";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { LegalFooter, LegalPages } from "@/components/modules/landing/Copyright";
 
 const HomePage: React.FC = () => {
   return (
@@ -76,6 +77,9 @@ const HomePage: React.FC = () => {
           <p className="text-neutral-300 text-lg max-w-lg mx-auto mt-6">
             Experience seamless Company management with Workeloo CRM. Get started now and unlock powerful features.
           </p>
+          
+          <LegalFooter />
+      
         </div>
       </div>
     </div>
