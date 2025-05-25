@@ -483,7 +483,7 @@ IMPORTANT: Only return the raw JSON array with no additional text, explanations,
                       <p className="font-medium">Subject: {`How we can help with ${personas[activePersona].painPoints[0]?.toLowerCase()}`}</p>
                       <p className="mt-2">Hi {personas[activePersona].name.split(" ")[0]},</p>
                       <p className="mt-2">
-                        I noticed you're {personas[activePersona].bio.toLowerCase().split(" ").slice(0, 10).join(" ")}... 
+                        I noticed youre {personas[activePersona].bio.toLowerCase().split(" ").slice(0, 10).join(" ")}... 
                         Our solution helps professionals like you {personas[activePersona].goals[0]?.toLowerCase()} by addressing {personas[activePersona].painPoints[0]?.toLowerCase()}.
                       </p>
                       <p className="mt-2">
