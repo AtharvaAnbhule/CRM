@@ -80,7 +80,7 @@ export function LegalFooter() {
                   <h1 className="text-3xl font-bold mb-6">Terms & Conditions</h1>
                   <p className="text-gray-600 mb-6">Last updated on May 25th 2025</p>
                   
-                  <p>For the purpose of these Terms and Conditions, The term "we", "us", "our" used anywhere on this page shall mean Workeloo, whose registered/operational office is F-201,Shanti Residency,Siddhatek Society, Near sutarwadi bus stop,Pashan,Pune Pune MAHARASHTRA 411021. "you", "your", "user", "visitor" shall mean any natural or legal person who is visiting our website and/or agreed to purchase from us.</p>
+                  <p>For the purpose of these Terms and Conditions, The term we, us, our used anywhere on this page shall mean Workeloo, whose registered/operational office is F-201,Shanti Residency,Siddhatek Society, Near sutarwadi bus stop,Pashan,Pune Pune MAHARASHTRA 411021. you, your, user, visitor shall mean any natural or legal person who is visiting our website and/or agreed to purchase from us.</p>
                   
                   <h2 className="mt-6">Your Agreement</h2>
                   <p>Your use of the website and/or purchase from us are governed by following Terms and Conditions:</p>
