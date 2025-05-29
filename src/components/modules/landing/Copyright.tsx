@@ -114,9 +114,7 @@ export function LegalFooter() {
                   <h2 className="mt-6">Transaction Limitations</h2>
                   <p>We, shall be under no liability whatsoever in respect of any loss or damage arising directly or indirectly out of the decline of authorization for any Transaction, on Account of the Cardholder having exceeded the preset limit mutually agreed by us with our acquiring bank from time to time.</p>
                   
-                  <p className="mt-6 text-sm text-gray-500">
-                    Disclaimer: The above content is created at ATHARVA MAHESH ANBHULEs sole discretion. Razorpay shall not be liable for any content provided here and shall not be responsible for any claims and liability that may arise due to merchants non-adherence to it.
-                  </p>
+                  
                 </>
               )}
 
