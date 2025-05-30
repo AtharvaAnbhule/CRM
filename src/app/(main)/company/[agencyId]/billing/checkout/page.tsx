@@ -69,7 +69,7 @@ const agencyId = pathParts[2]; // assuming the URL is /company/<agencyId>/billin
     console.log(orderId)
     try {
       const options = {
-        key: "rzp_test_5YGsSUVhuQc0eu",
+        key: "rzp_live_LmEdoa4ihCWXDD",
         amount: parseFloat(amount!) * 100,
         currency: "INR",
         name: "Payment", //busniess name
