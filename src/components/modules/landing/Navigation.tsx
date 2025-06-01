@@ -69,7 +69,7 @@ const Navigation = async () => {
           href="/Services"
           className="px-4 py-2 z-[100] bg-[#6B46C1] text-white text-sm font-medium rounded-sm shadow-md hover:bg-teal-700 transition-all"
         >
-          Services
+          Services 
         </Link> 
         <Link
           href="/Meeting"
