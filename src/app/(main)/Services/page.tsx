@@ -113,10 +113,10 @@ export default function AgencyPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-lg font-semibold text-foreground">Only ₹50</div>
+            <div className="text-lg font-semibold text-foreground">Only ₹100</div>
             <Button
               className="w-full bg-violet-600 text-white hover:bg-violet-700"
-              onClick={() => window.open("https://buy.stripe.com/test_a1b2c3", "_blank")}
+              
             >
               Fill in the details below in the form
             </Button>

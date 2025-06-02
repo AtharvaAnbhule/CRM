@@ -17,7 +17,7 @@ export async function POST(req:Request) {
     // Compose the email content
     const mailOptions = {
       from: process.env.EMAIL, // Sender's email
-      to: 'your-email@example.com', // Your destination email address
+      to: userEmail, // Your destination email address
       subject: 'New Chatbot Response from User', // Subject line
       html: `
         <h3>New Submission from the Chatbot</h3>

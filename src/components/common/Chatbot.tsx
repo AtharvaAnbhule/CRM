@@ -13,6 +13,7 @@ const questions = [
   "What features are you looking for in a CRM platform?",
   "What is your budget for a CRM solution?",
   "How soon are you planning to implement a CRM?",
+  "What is your email address? (So we can follow up)", // Added email question
 ];
 
 const Chatbot = () => {
@@ -21,13 +22,18 @@ const Chatbot = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [answers, setAnswers] = useState([]);
-  const [userEmail, setUserEmail] = useState(''); // For user email collection
+  const [isEmailCollected, setIsEmailCollected] = useState(false);
 
   const handleSend = () => {
     if (userInput.trim() === '') return;
 
     const newChat = [...chat, { sender: 'user', text: userInput }];
     setUserInput('');
+
+    // Check if this is the email question (last question)
+    if (currentQuestionIndex === questions.length - 2) {
+      setIsEmailCollected(true);
+    }
 
     const nextQuestionIndex = currentQuestionIndex + 1;
     if (nextQuestionIndex < questions.length) {
@@ -39,7 +45,7 @@ const Chatbot = () => {
       // Collect all answers
       const userAnswers = questions.map((question, index) => ({
         question,
-        response: chat[index + 1]?.text || "No response",
+        response: newChat.filter(msg => msg.sender === 'user')[index]?.text || "No response",
       }));
       //@ts-ignore
       setAnswers(userAnswers);
@@ -53,6 +59,12 @@ const Chatbot = () => {
 
   const sendEmail = async (userAnswers: any) => {
     try {
+      // Extract email from answers (it will be the last answer)
+      const emailAnswer = userAnswers.find(
+        (answer: any) => answer.question === "What is your email address? (So we can follow up)"
+      );
+      const userEmail = emailAnswer?.response || "No email provided";
+
       const response = await fetch('/api/sendEmail', {
         method: 'POST',
         headers: {
@@ -60,7 +72,7 @@ const Chatbot = () => {
         },
         body: JSON.stringify({
           answers: userAnswers,
-          userEmail, // You can also collect this email in the chatbot
+          userEmail,
         }),
       });
 
@@ -92,17 +104,19 @@ const Chatbot = () => {
           <div className="flex-1 overflow-y-auto mb-4" style={{ height: '70%' }}>
             {chat.map((item, index) => (
               <div key={index} className={`mb-2 ${item.sender === 'bot' ? 'text-left' : 'text-right'}`}>
-                <p className={`inline-block px-4 py-2 rounded-lg ${item.sender === 'bot' ? 'dark:bg-black-200' : 'bg-purple-500 text-white'}`}>{item.text}</p>
+                <p className={`inline-block px-4 py-2 rounded-lg ${item.sender === 'bot' ? 'dark:bg-black-200' : 'bg-purple-500 text-white'}`}>
+                  {item.text}
+                </p>
               </div>
             ))}
           </div>
 
           <div className="flex items-center border-t">
             <input
-              type="text"
+              type={isEmailCollected ? "email" : "text"}
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type your answer..."
+              placeholder={isEmailCollected ? "Type your email..." : "Type your answer..."}
               className="flex-1 border-none focus:ring-0 focus:outline-none"
             />
             <Button onClick={handleSend} className="bg-purple-500 text-white ml-2 p-2 rounded-full">
