@@ -43,7 +43,7 @@ export const HeroContainerScroll: React.FC<HeroContainerScrollProps> = () => {
     <div className="max-w-8xl mx-auto text-center"> 
     
     <div className="bg-gradient-to-r from-gray-800 to-purple-600 bg-clip-text text-transparent">
-            <h1 className="text-6xl font-bold text-center md:text-[250px]">Workeloo</h1>
+            <h1 className="text-6xl font-bold text-center md:text-[150px]">Workeloo</h1>
           </div>
          
       {/* Main Heading */}

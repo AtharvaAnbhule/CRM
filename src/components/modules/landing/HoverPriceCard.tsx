@@ -44,7 +44,7 @@ const HoverPriceCard: React.FC = () => {
           
           <Card
             className={cn(
-              "w-full h-full flex flex-col justify-between z-30 relative",
+              "w-full h-full flex flex-col justify-between  relative",
               "border border-gray-200 dark:border-gray-800 rounded-xl",
               "bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow",
               {

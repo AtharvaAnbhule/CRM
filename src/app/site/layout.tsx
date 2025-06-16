@@ -6,7 +6,9 @@ const layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <AuthProvider>
       <main className="h-full">
+ 
         <Navigation />
+    
         {children}
       </main>
     </AuthProvider>
