@@ -583,6 +583,13 @@ model Note {
   leadId    String
 
   lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+} 
+
+model Notes {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
 model ExpiringNote {

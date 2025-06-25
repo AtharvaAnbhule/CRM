@@ -10,6 +10,7 @@ import TeamsDataTable from "./data-table";
 import { teamTableColumns } from "./columns";
 import SendInvitation from "@/components/forms/SendInvitation";
 import { constructMetadata } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface TeamPageProps {
   params: {
@@ -31,6 +32,8 @@ const TeamPage: React.FC<TeamPageProps> = async ({ params }) => {
   if (!agencyDetails) redirect("/company/unauthorized");
 
   return (
+    <>
+    
     <TeamsDataTable
     className= "bg-violet-600"
   actionButtonText = {
@@ -45,6 +48,8 @@ filterValue = "name"
 columns = { teamTableColumns }
 data = { teamMembers }
   />
+  
+  </>
   );
 };
 

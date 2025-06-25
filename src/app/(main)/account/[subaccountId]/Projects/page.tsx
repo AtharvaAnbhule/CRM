@@ -230,13 +230,15 @@ export default function Projects() {
     
     const method = editingProject ? "PUT" : "POST";
     const url = editingProject ? `/api/projects/${editingProject.id}` : "/api/projects";
-
+                    
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectForm),
-      });
+      }); 
+
+      
       
       if (!res.ok) throw new Error(editingProject ? "Failed to update project" : "Failed to create project");
 

@@ -31,6 +31,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CustomModal from "@/components/common/CustomModal";
+import { ManualAddModal } from "./AddModal";
+import { usePathname } from "next/navigation";
 
 interface TeamsDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -60,6 +62,12 @@ function TeamsDataTable<TData extends { createdAt?: string }, TValue>({
 
  // Top of the component
 const [graphData, setGraphData] = useState<{ date: string; total: number }[]>([]);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [users, setUsers] = useState([]);
+
+  const pathname = usePathname();
+const pathParts = pathname.split("/");
+const agencyId = pathParts[2]; // assuming the URL is /company/<agencyId>/billing/checkout
 
 useEffect(() => {
   const counts: Record<string, number> = {};
@@ -132,6 +140,16 @@ useEffect(() => {
 </div>
 
       </div>
+      <Button onClick={() => setIsModalOpen(true)} className="bg-violet-600">
+  Add Manually
+</Button>
+
+<ManualAddModal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  agencyId={agencyId}
+  onAdd={(user) => setUsers((prev) => [...prev, user])}
+/>
 
       <div className="flex items-center justify-between">
         <div className="relative">
@@ -164,6 +182,7 @@ useEffect(() => {
           {actionButtonText}
         </Button>
       </div>
+      
 
       <div className="border bg-background rounded-md">
         <Table>
@@ -203,7 +222,9 @@ useEffect(() => {
             )}
           </TableBody>
         </Table>
+
       </div>
+      
     </div>
   );
 }
