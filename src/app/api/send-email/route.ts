@@ -15,7 +15,9 @@ export async function POST(request: Request) {
 
     // Create reusable transporter object using SMTP transport
     const transporter = nodemailer.createTransport({
-      service: 'Gmail',
+      host: 'smtp.zeptomail.in',
+  port: 587, // Or use 465 for SSL
+  secure: false, // true if using port 465
       auth: {
         user: process.env.CONTACT_EMAIL,
         pass: process.env.CONTACT_EMAIL_PASSWORD,
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
       emails.map(async (email) => {
         try {
           const info = await transporter.sendMail({
-            from: `"team Workeloo" <${process.env.CONTACT_EMAIL}>`,
+            from: '"Workeloo Team" <noreply@workeloo.com>',
             to: email.to,
             subject: email.subject,
             text: email.content,

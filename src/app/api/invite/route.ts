@@ -157,9 +157,9 @@ export async function POST(request: Request) {
 
     // Send email
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+      host: 'smtp.zeptomail.in',
+  port: 587, // Or use 465 for SSL
+  secure: false, // true if using port 465
       auth: {
         user: process.env.CONTACT_EMAIL,
         pass: process.env.CONTACT_EMAIL_PASSWORD,
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
     });
 
     await transporter.sendMail({
-      from: `"Your Company CRM" <${process.env.CONTACT_EMAIL}>`,
+      from: '"Workeloo Team" <noreply@workeloo.com>',
       to: attendeeEmail,
       subject: `Invitation: ${title}`,
       html: emailHtml,

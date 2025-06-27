@@ -67,8 +67,9 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
   const { setOpen } = useModal();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const agencyId = searchParams.get("agencyId");
-
+  // const agencyId = searchParams.get("agencyId");
+const pathParts = pathname.split("/");
+const agencyId = pathParts[2]; // assuming the URL is /company/<agencyId>/billing/checkout
 
   const { signOut } = useClerk();
 
@@ -466,7 +467,7 @@ className = "w-full flex items-center justify-start gap-2 text-gray-900 dark:tex
   <h2 className="text-lg font-semibold text-center" >
     Upgrade to < span className = "font-bold" > PRO </span> to get access to all Features!
       </h2>
-      < button className = "mt-4 px-6 py-3 bg-white text-purple-700 font-semibold rounded-full shadow-md hover:bg-gray-100 transition duration-300" >
+      < button className = "mt-4 px-6 py-3 bg-white text-purple-700 font-semibold rounded-full shadow-md hover:bg-gray-100 transition duration-300" onClick={()=>router.push(`/company/${agencyId}/billing`)} >
         Get Pro Now!
           </button>
           </div>

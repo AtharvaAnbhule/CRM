@@ -45,7 +45,9 @@ export async function POST(req: NextRequest) {
 
     // 🔥 Email the user the Razorpay-hosted payment page link
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.zeptomail.in',
+  port: 587, // Or use 465 for SSL
+  secure: false, // true if using port 465
       auth: {
         user: process.env.CONTACT_EMAIL,
         pass: process.env.CONTACT_EMAIL_PASSWORD,
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
 
 
     await transporter.sendMail({
-      from: `"Your Company" <${process.env.CONTACT_EMAIL}>`,
+      from: '"Workeloo Team" <noreply@workeloo.com>', // Must be verified in ZeptoMail
       to: email,
       subject: `Complete your payment for ${product.name}`,
       html: messageHtml,

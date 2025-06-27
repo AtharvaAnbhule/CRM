@@ -7,7 +7,9 @@ export async function POST(req:Request) {
 
     // Create a Nodemailer transporter object
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // Can be replaced with any other service
+      host: 'smtp.zeptomail.in',
+  port: 587, // Or use 465 for SSL
+  secure: false, // true if using port 465
       auth: {
         user: process.env.CONTACT_EMAIL, // Your email address from environment variables
         pass: process.env.CONTACT_EMAIL_PASSWORD, // Your email password or app password
@@ -16,7 +18,7 @@ export async function POST(req:Request) {
 
     // Compose the email content
     const mailOptions = {
-      from: process.env.EMAIL, // Sender's email
+      from: '"Workeloo Team" <noreply@workeloo.com>',
       to: userEmail, // Your destination email address
       subject: 'New Chatbot Response from User', // Subject line
       html: `

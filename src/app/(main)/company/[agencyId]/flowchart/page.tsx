@@ -50,6 +50,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+
+import { Edit, Image, LineChart, LucideFormInput, Menu, MenuIcon, Palette, Save, Settings, Shapes, Trash, X, ZoomIn, ZoomOut } from 'lucide-react';
 
 // ===== NODE TYPES =====
 const RectangleNode = ({ data, selected }: { data: any; selected: boolean }) => {
@@ -340,143 +344,17 @@ const initialNodes: Node[] = [
     position: { x: 250, y: 5 },
     data: { 
       title: 'Start',
-      label: 'Double click to edit\nAdd detailed information here',
-      note: 'Initial step',
+      label: 'Double click to edit\nAdd your content here',
       color: '#3b82f6', 
       textColor: '#ffffff',
       borderColor: '#1d4ed8',
       borderWidth: 2,
       borderStyle: 'solid',
     },
-  },
-  {
-    id: '2',
-    type: 'diamond',
-    position: { x: 250, y: 150 },
-    data: { 
-      title: 'Decision',
-      label: 'Is this working?',
-      note: 'Critical decision point',
-      color: '#f59e0b', 
-      textColor: '#000000',
-      borderColor: '#d97706',
-      borderWidth: 3,
-      borderStyle: 'solid',
-    },
-  },
-  {
-    id: '3',
-    type: 'circle',
-    position: { x: 100, y: 300 },
-    data: { 
-      title: 'Yes',
-      label: 'Proceed to next step',
-      note: 'Positive path',
-      color: '#10b981', 
-      textColor: '#ffffff',
-      borderColor: '#059669',
-      borderWidth: 2,
-      borderStyle: 'solid',
-    },
-  },
-  {
-    id: '4',
-    type: 'hexagon',
-    position: { x: 400, y: 300 },
-    data: { 
-      title: 'No',
-      label: 'Review and fix issues',
-      note: 'Negative path',
-      color: '#ef4444', 
-      textColor: '#ffffff',
-      borderColor: '#dc2626',
-      borderWidth: 2,
-      borderStyle: 'solid',
-    },
-  },
-  {
-    id: '5',
-    type: 'parallelogram',
-    position: { x: 100, y: 450 },
-    data: { 
-      title: 'Next Step',
-      label: 'Implement solution\nDocument process',
-      note: 'Action items',
-      color: '#8b5cf6', 
-      textColor: '#ffffff',
-      borderColor: '#7c3aed',
-      borderWidth: 2,
-      borderStyle: 'solid',
-    },
-  },
+  }
 ];
 
-const initialEdges: Edge[] = [
-  { 
-    id: 'e1-2', 
-    source: '1', 
-    target: '2',
-    type: 'custom',
-    data: {
-      label: 'next',
-      color: '#64748b',
-      width: 2,
-      style: 'solid',
-      edgeType: 'smoothstep',
-      labelBgColor: '#e2e8f0',
-      labelColor: '#1e293b',
-      labelBorderColor: '#cbd5e1',
-    }
-  },
-  { 
-    id: 'e2-3', 
-    source: '2', 
-    target: '3',
-    type: 'custom',
-    data: {
-      label: 'yes',
-      color: '#10b981',
-      width: 3,
-      style: 'solid',
-      edgeType: 'straight',
-      labelBgColor: '#d1fae5',
-      labelColor: '#065f46',
-      labelBorderColor: '#a7f3d0',
-    }
-  },
-  { 
-    id: 'e2-4', 
-    source: '2', 
-    target: '4',
-    type: 'custom',
-    data: {
-      label: 'no',
-      color: '#ef4444',
-      width: 3,
-      style: 'solid',
-      edgeType: 'straight',
-      labelBgColor: '#fee2e2',
-      labelColor: '#b91c1c',
-      labelBorderColor: '#fecaca',
-    }
-  },
-  { 
-    id: 'e3-5', 
-    source: '3', 
-    target: '5',
-    type: 'custom',
-    data: {
-      label: 'continue',
-      color: '#8b5cf6',
-      width: 2,
-      style: 'solid',
-      edgeType: 'smoothstep',
-      labelBgColor: '#ede9fe',
-      labelColor: '#5b21b6',
-      labelBorderColor: '#ddd6fe',
-    }
-  },
-];
+const initialEdges: Edge[] = [];
 
 // ===== MAIN COMPONENT =====
 const FlowChartMaker = () => {
@@ -520,6 +398,7 @@ const FlowChartMaker = () => {
   const flowRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileView, setMobileView] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   // Check for mobile view on mount and resize
   useEffect(() => {
@@ -586,9 +465,8 @@ const FlowChartMaker = () => {
         type,
         position,
         data: { 
-          title: 'Title',
-          label: 'Description\nAdd details here',
-          note: 'Notes or comments',
+          title: 'New Node',
+          label: 'Double click to edit',
           color: nodeColor,
           textColor: textColor,
           borderColor: borderColor,
@@ -771,6 +649,25 @@ const FlowChartMaker = () => {
     setEdgeDialogOpen(false);
   }, [selectedEdge, setEdges]);
 
+  // ===== ZOOM HANDLERS =====
+  const zoomIn = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomIn();
+    }
+  }, [reactFlowInstance]);
+
+  const zoomOut = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomOut();
+    }
+  }, [reactFlowInstance]);
+
+  const fitView = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView();
+    }
+  }, [reactFlowInstance]);
+
   // ===== KEYBOARD SHORTCUTS =====
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -799,16 +696,9 @@ const FlowChartMaker = () => {
                 onClick={() => setSidebarOpen(!sidebarOpen)}
               >
                 {sidebarOpen ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
+                  <X className="h-4 w-4" />
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                  </svg>
+                  <Menu className="h-4 w-4" />
                 )}
               </Button>
             )}
@@ -838,12 +728,15 @@ const FlowChartMaker = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => saveFlow()}>
+                    <Save className="mr-2 h-4 w-4" />
                     Save as JSON
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => downloadImage('png')}>
+                    <Image className="mr-2 h-4 w-4" />
                     Export as PNG
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => downloadImage('svg')}>
+                    <Image className="mr-2 h-4 w-4" />
                     Export as SVG
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -858,24 +751,38 @@ const FlowChartMaker = () => {
         <aside 
           className={`absolute md:relative z-20 h-full w-72 border-r bg-background p-4 overflow-y-auto transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
         >
-          <h2 className="mb-4 text-lg font-semibold">Shapes</h2>
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <Shapes className="h-5 w-5" />
+            Shapes
+          </h2>
           <div className="grid grid-cols-2 gap-2">
             {['rectangle', 'circle', 'diamond', 'parallelogram', 'hexagon'].map((type) => (
-              <div
-                key={type}
-                className="flex h-24 cursor-grab items-center justify-center rounded-md border bg-card p-2 font-medium text-center hover:bg-accent transition-colors"
-                onDragStart={(event) => onDragStart(event, type)}
-                draggable
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </div>
+              <TooltipProvider>
+              <Tooltip key={type}>
+                <TooltipTrigger asChild>
+                  <div
+                    className="flex h-24 cursor-grab items-center justify-center rounded-md border bg-card p-2 font-medium text-center hover:bg-accent transition-colors"
+                    onDragStart={(event) => onDragStart(event, type)}
+                    draggable
+                  >
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Drag to create a {type} node</p>
+                </TooltipContent>
+              </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
 
           <Separator className="my-4" />
 
           <div className="p-3 mb-4 border rounded-md bg-accent/50">
-            <p className="text-sm font-medium">Current Connection Style</p>
+            <p className="text-sm font-medium flex items-center gap-2">
+              <LineChart className="h-4 w-4" />
+              Current Connection Style
+            </p>
             <div 
               className="h-2 my-2 rounded-full"
               style={{
@@ -885,11 +792,14 @@ const FlowChartMaker = () => {
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Drag from a nodes handle to connect
+              Drag from a node's handle to connect
             </p>
           </div>
 
-          <h2 className="mb-4 text-lg font-semibold">Connection Settings</h2>
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Connection Settings
+          </h2>
           <div className="space-y-4">
             <div>
               <Label>Line Type</Label>
@@ -951,7 +861,10 @@ const FlowChartMaker = () => {
 
           <Separator className="my-4" />
 
-          <h2 className="mb-4 text-lg font-semibold">Node Settings</h2>
+          <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Node Settings
+          </h2>
           <div className="space-y-4">
             <div>
               <Label>Node Color</Label>
@@ -1004,11 +917,7 @@ const FlowChartMaker = () => {
               className="absolute top-4 left-4 z-10"
               onClick={() => setSidebarOpen(true)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
+              <MenuIcon className="h-4 w-4" />
             </Button>
           )}
           
@@ -1038,9 +947,34 @@ const FlowChartMaker = () => {
             fitView
             snapToGrid
             snapGrid={[15, 15]}
+            onMove={() => {
+              if (reactFlowInstance) {
+                setZoom(reactFlowInstance.getZoom());
+              }
+            }}
           >
             <Controls className="!bottom-2 !right-2 !top-auto" />
             <Background gap={20} />
+            
+            {/* Custom zoom controls */}
+            <Panel position="top-left" className="!left-2 !top-2">
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={zoomIn}>
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={zoomOut}>
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={fitView}>
+                  <LucideFormInput className="h-4 w-4" />
+                </Button>
+                <Badge variant="secondary" className="px-2 py-1">
+                  {Math.round(zoom * 100)}%
+                </Badge>
+              </div>
+            </Panel>
+            
+            {/* Selection controls */}
             <Panel position="top-right" className="!right-2 !top-2">
               {selectedNode && (
                 <div className="flex gap-2">
@@ -1049,9 +983,11 @@ const FlowChartMaker = () => {
                     size="sm"
                     onClick={() => setNodeDialogOpen(true)}
                   >
-                    Edit Node
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
                   </Button>
                   <Button variant="destructive" size="sm" onClick={deleteNode}>
+                    <Trash className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
                 </div>
@@ -1063,9 +999,11 @@ const FlowChartMaker = () => {
                     size="sm"
                     onClick={() => setEdgeDialogOpen(true)}
                   >
-                    Edit Connection
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
                   </Button>
                   <Button variant="destructive" size="sm" onClick={deleteEdge}>
+                    <Trash className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
                 </div>
@@ -1074,137 +1012,149 @@ const FlowChartMaker = () => {
           </ReactFlow>
         </div>
       </div>
-
-      {/* NODE EDIT DIALOG */}
+  {/* NODE EDIT DIALOG */}
       <Dialog open={nodeDialogOpen} onOpenChange={setNodeDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Node</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <Tabs defaultValue="content">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="content">Content</TabsTrigger>
-                <TabsTrigger value="style">Style</TabsTrigger>
-              </TabsList>
-              <TabsContent value="content">
-                <div className="space-y-4">
-                  <div>
-                    <Label>Title</Label>
-                    <Input
-                      value={nodeTitle}
-                      onChange={(e) => setNodeTitle(e.target.value)}
-                    />
+          <Tabs defaultValue="content" className="mt-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="style">Style</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="content" className="space-y-4">
+              <div>
+                <Label>Title</Label>
+                <Input 
+                  value={nodeTitle} 
+                  onChange={(e) => setNodeTitle(e.target.value)} 
+                  placeholder="Node title"
+                />
+              </div>
+              <div>
+                <Label>Content</Label>
+                <Textarea
+                  value={nodeLabel}
+                  onChange={(e) => setNodeLabel(e.target.value)}
+                  placeholder="Node content"
+                  rows={5}
+                />
+              </div>
+              <div>
+                <Label>Note (Optional)</Label>
+                <Input
+                  value={nodeNote}
+                  onChange={(e) => setNodeNote(e.target.value)}
+                  placeholder="Small note to display"
+                />
+              </div>
+              <div>
+                <Label>Link (Optional)</Label>
+                <Input
+                  value={nodeLink}
+                  onChange={(e) => setNodeLink(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="style" className="space-y-4">
+              <div>
+                <Label>Node Type</Label>
+                <RadioGroup 
+                  value={nodeType} 
+                  onValueChange={setNodeType}
+                  className="grid grid-cols-2 gap-2 mt-2"
+                >
+                  {['rectangle', 'circle', 'diamond', 'parallelogram', 'hexagon'].map((type) => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <RadioGroupItem value={type} id={type} />
+                      <Label htmlFor={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              <div>
+                <Label>Node Color</Label>
+                <ColorPicker value={nodeColor} onChange={setNodeColor} />
+              </div>
+              <div>
+                <Label>Text Color</Label>
+                <ColorPicker value={textColor} onChange={setTextColor} />
+              </div>
+              <div>
+                <Label>Border Color</Label>
+                <ColorPicker value={borderColor} onChange={setBorderColor} />
+              </div>
+              <div>
+                <Label>Border Width</Label>
+                <Slider
+                  value={[borderWidth]}
+                  onValueChange={([value]) => setBorderWidth(value)}
+                  min={0}
+                  max={10}
+                  step={1}
+                />
+              </div>
+              <div>
+                <Label>Border Style</Label>
+                <RadioGroup 
+                  value={borderStyle} 
+                  onValueChange={setBorderStyle}
+                  className="grid grid-cols-2 gap-2 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="solid" id="node-solid" />
+                    <Label htmlFor="node-solid">Solid</Label>
                   </div>
-                  <div>
-                    <Label>Description (Supports multi-line text)</Label>
-                    <Textarea
-                      value={nodeLabel}
-                      onChange={(e) => setNodeLabel(e.target.value)}
-                      rows={4}
-                    />
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="dashed" id="node-dashed" />
+                    <Label htmlFor="node-dashed">Dashed</Label>
                   </div>
-                  <div>
-                    <Label>Notes</Label>
-                    <Input
-                      value={nodeNote}
-                      onChange={(e) => setNodeNote(e.target.value)}
-                      placeholder="Additional information"
-                    />
-                  </div>
-                  <div>
-                    <Label>Link URL</Label>
-                    <Input
-                      value={nodeLink}
-                      onChange={(e) => setNodeLink(e.target.value)}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>Node Type</Label>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-full">
-                          {nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        {Object.keys(nodeTypes).map((type) => (
-                          <DropdownMenuItem key={type} onClick={() => setNodeType(type)}>
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </TabsContent>
-              <TabsContent value="style">
-                <div className="space-y-4">
-                  <div>
-                    <Label>Node Color</Label>
-                    <ColorPicker value={nodeColor} onChange={setNodeColor} />
-                  </div>
-                  <div>
-                    <Label>Text Color</Label>
-                    <ColorPicker value={textColor} onChange={setTextColor} />
-                  </div>
-                  <div>
-                    <Label>Border Color</Label>
-                    <ColorPicker value={borderColor} onChange={setBorderColor} />
-                  </div>
-                  <div>
-                    <Label>Border Width</Label>
-                    <Slider
-                      value={[borderWidth]}
-                      onValueChange={([value]) => setBorderWidth(value)}
-                      min={0}
-                      max={10}
-                      step={1}
-                    />
-                  </div>
-                  <div>
-                    <Label>Border Style</Label>
-                    <RadioGroup 
-                      value={borderStyle} 
-                      onValueChange={setBorderStyle}
-                      className="grid grid-cols-2 gap-2 mt-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="solid" id="dialog-solid" />
-                        <Label htmlFor="dialog-solid">Solid</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="dashed" id="dialog-dashed" />
-                        <Label htmlFor="dialog-dashed">Dashed</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+                </RadioGroup>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="advanced" className="space-y-4">
+              <div className="p-4 border rounded-md bg-muted">
+                <p className="text-sm text-muted-foreground">
+                  Advanced node settings would go here. This could include:
+                </p>
+                <ul className="mt-2 text-sm text-muted-foreground list-disc pl-4">
+                  <li>Custom CSS classes</li>
+                  <li>Animation settings</li>
+                  <li>Interaction behaviors</li>
+                  <li>Data binding options</li>
+                </ul>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
           <DialogFooter>
-            <Button className="w-full" onClick={updateNode}>
-              Save Changes
+            <Button variant="outline" onClick={() => setNodeDialogOpen(false)}>
+              Cancel
             </Button>
+            <Button onClick={updateNode}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* EDGE EDIT DIALOG */}
       <Dialog open={edgeDialogOpen} onOpenChange={setEdgeDialogOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Connection</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <div>
-              <Label>Connection Label</Label>
+              <Label>Label (Optional)</Label>
               <Input
                 value={edgeLabel}
                 onChange={(e) => setEdgeLabel(e.target.value)}
-                placeholder="Describe this connection"
+                placeholder="Connection label"
               />
             </div>
             <div>
@@ -1224,21 +1174,19 @@ const FlowChartMaker = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Line Color</Label>
-                <ColorPicker value={edgeColor} onChange={setEdgeColor} />
-              </div>
-              <div>
-                <Label>Line Width</Label>
-                <Slider
-                  value={[edgeWidth]}
-                  onValueChange={([value]) => setEdgeWidth(value)}
-                  min={1}
-                  max={10}
-                  step={1}
-                />
-              </div>
+            <div>
+              <Label>Line Color</Label>
+              <ColorPicker value={edgeColor} onChange={setEdgeColor} />
+            </div>
+            <div>
+              <Label>Line Width</Label>
+              <Slider
+                value={[edgeWidth]}
+                onValueChange={([value]) => setEdgeWidth(value)}
+                min={1}
+                max={10}
+                step={1}
+              />
             </div>
             <div>
               <Label>Line Style</Label>
@@ -1265,28 +1213,24 @@ const FlowChartMaker = () => {
               />
               <Label htmlFor="edge-arrow">Show Arrow</Label>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Label Background</Label>
-                <ColorPicker value={labelBgColor} onChange={setLabelBgColor} />
-              </div>
-              <div>
-                <Label>Label Text</Label>
-                <ColorPicker value={labelColor} onChange={setLabelColor} />
-              </div>
-              <div>
-                <Label>Label Border</Label>
-                <ColorPicker value={labelBorderColor} onChange={setLabelBorderColor} />
-              </div>
+            <div>
+              <Label>Label Background Color</Label>
+              <ColorPicker value={labelBgColor} onChange={setLabelBgColor} />
+            </div>
+            <div>
+              <Label>Label Text Color</Label>
+              <ColorPicker value={labelColor} onChange={setLabelColor} />
+            </div>
+            <div>
+              <Label>Label Border Color</Label>
+              <ColorPicker value={labelBorderColor} onChange={setLabelBorderColor} />
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button variant="destructive" onClick={deleteEdge}>
-              Delete Connection
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEdgeDialogOpen(false)}>
+              Cancel
             </Button>
-            <Button onClick={updateEdge}>
-              Save Changes
-            </Button>
+            <Button onClick={updateEdge}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1297,16 +1241,53 @@ const FlowChartMaker = () => {
           <DialogHeader>
             <DialogTitle>Import Flow</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label>Paste your flow JSON data</Label>
+              <Textarea
+                value={flowData}
+                onChange={(e) => setFlowData(e.target.value)}
+                placeholder="Paste JSON data here"
+                rows={8}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Note: Importing will replace your current flow.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={loadFlow}>Import</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* EXPORT DIALOG */}
+      <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Flow</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Label>Flow Data</Label>
             <Textarea
-              value={flowData}
-              onChange={(e) => setFlowData(e.target.value)}
-              placeholder="Paste your flow JSON here"
+              value={JSON.stringify({ nodes, edges }, null, 2)}
+              readOnly
               rows={8}
             />
           </div>
           <DialogFooter>
-            <Button onClick={loadFlow}>Import</Button>
+            <Button variant="outline" onClick={() => setExportDialogOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              navigator.clipboard.writeText(JSON.stringify({ nodes, edges }, null, 2));
+              setExportDialogOpen(false);
+            }}>
+              Copy to Clipboard
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1314,10 +1295,4 @@ const FlowChartMaker = () => {
   );
 };
 
-export default function FlowChartPage() {
-  return (
-    <ReactFlowProvider>
-      <FlowChartMaker />
-    </ReactFlowProvider>
-  );
-}
+export default FlowChartMaker;

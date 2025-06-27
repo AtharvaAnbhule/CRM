@@ -11,8 +11,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
+  const transporter = nodemailer.createTransport({ 
+      host: 'smtp.zeptomail.in',
+  port: 587, // Or use 465 for SSL
+  secure: false, // true if using port 465
+
+    // service: "gmail",
     auth: {
       user: process.env.CONTACT_EMAIL,
       pass: process.env.CONTACT_EMAIL_PASSWORD,
@@ -20,9 +24,9 @@ export async function POST(req: Request) {
   });
 
   await transporter.sendMail({
-    from: `"${name}" <${email}>`,
-    to: process.env.CONTACT_EMAIL,
-    subject: "New Agency Contact Form",
+    from: '"Workeloo Team" <noreply@workeloo.com>', // Must be verified in ZeptoMail
+  to: 'atharvaanbhule@gmail.com',
+  subject: "New Agency Contact Form",
     text: message.toString(),
   });
 
