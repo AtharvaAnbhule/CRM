@@ -755,26 +755,26 @@ const FlowChartMaker = () => {
             <Shapes className="h-5 w-5" />
             Shapes
           </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {['rectangle', 'circle', 'diamond', 'parallelogram', 'hexagon'].map((type) => (
-              <TooltipProvider>
-              <Tooltip key={type}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="flex h-24 cursor-grab items-center justify-center rounded-md border bg-card p-2 font-medium text-center hover:bg-accent transition-colors"
-                    onDragStart={(event) => onDragStart(event, type)}
-                    draggable
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Drag to create a {type} node</p>
-                </TooltipContent>
-              </Tooltip>
-              </TooltipProvider>
-            ))}
+        <div className="grid grid-cols-2 gap-2">
+  {['rectangle', 'circle', 'diamond', 'parallelogram', 'hexagon'].map((type) => (
+    <TooltipProvider key={type}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="flex h-24 cursor-grab items-center justify-center rounded-md border bg-card p-2 font-medium text-center hover:bg-accent transition-colors"
+            onDragStart={(event) => onDragStart(event, type)}
+            draggable
+          >
+            {type.charAt(0).toUpperCase() + type.slice(1)}
           </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{`Drag to create a ${type} node`}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ))}
+</div>
 
           <Separator className="my-4" />
 
