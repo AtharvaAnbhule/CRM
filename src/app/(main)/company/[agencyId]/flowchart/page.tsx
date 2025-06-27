@@ -792,7 +792,7 @@ const FlowChartMaker = () => {
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Drag from a node's handle to connect
+              Drag from a nodes handle to connect
             </p>
           </div>
 
