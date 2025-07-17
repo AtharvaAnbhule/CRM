@@ -1,6 +1,3 @@
-
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -74,17 +71,17 @@ enum Icon {
 }
 
 model User {
-  id           String   @id @default(uuid()) 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  name         String
-  avatarUrl    String
-  email        String   @unique
-  role         Role     @default(SUBACCOUNT_USER)
-  agencyId     String?
+  name      String
+  avatarUrl String
+  email     String  @unique
+  role      Role    @default(SUBACCOUNT_USER)
+  agencyId  String?
 
-  agency       Agency?     @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agency       Agency?        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   permissions  Permissions[]
   tickets      Ticket[]
   notification Notification[]
@@ -93,9 +90,9 @@ model User {
 }
 
 model Agency {
-  id              String   @id @default(uuid()) 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   connectAccountId String? @default("")
   customerId       String  @default("")
@@ -119,19 +116,19 @@ model Agency {
   facebookUrl      String
   years            String
 
-  users           User[]
-  subAccounts     SubAccount[]
-  sidebarOptions  AgencySidebarOption[]
-  invitations     Invitation[]
-  notifications   Notification[]
-  subscriptions   Subscription?
-  addOns          AddOns[]
+  users          User[]
+  subAccounts    SubAccount[]
+  sidebarOptions AgencySidebarOption[]
+  invitations    Invitation[]
+  notifications  Notification[]
+  subscriptions  Subscription?
+  addOns         AddOns[]
 }
 
 model SubAccount {
-  id              String   @id @default(uuid()) 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   connectAccountId String? @default("")
   name             String
@@ -161,63 +158,61 @@ model SubAccount {
   notifications  Notification[]
 
   @@index([agencyId])
-} 
-
-
+}
 
 model Permissions {
-  id            String   @id @default(uuid()) 
-  email         String
-  subAccountId  String
-  access        Boolean
+  id           String  @id @default(uuid())
+  email        String
+  subAccountId String
+  access       Boolean
 
-  user          User       @relation(fields: [email], references: [email], onDelete: Cascade)
-  subAccount    SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [email], references: [email], onDelete: Cascade)
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   @@index([subAccountId])
   @@index([email])
 }
 
 model Tag {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String
-  color         String
-  subAccountId  String
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  color        String
+  subAccountId String
 
-  subAccount    SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
-  tickets       Ticket[]
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  tickets    Ticket[]
 
   @@index([subAccountId])
 }
 
 model Pipeline {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String
-  subAccountId  String
-  email         String   @default("")
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  subAccountId String
+  email        String   @default("")
 
-  lanes         Lane[]
-  subAccount    SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  lanes      Lane[]
+  subAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   @@index([subAccountId])
 }
 
 model Notification {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  notification  String
-  agencyId      String
-  subAccountId  String?
-  userId        String
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  notification String
+  agencyId     String
+  subAccountId String?
+  userId       String
 
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency        Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  subAccount    SubAccount? @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  subAccount SubAccount? @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
 
   @@index([agencyId])
   @@index([subAccountId])
@@ -225,36 +220,36 @@ model Notification {
 }
 
 model Lane {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String
-  pipelineId    String
-  order         Int      @default(0)
-  color         String
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  name       String
+  pipelineId String
+  order      Int      @default(0)
+  color      String
 
-  pipeline      Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
-  tickets       Ticket[]
+  pipeline Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
 
   @@index([pipelineId])
 }
 
 model Ticket {
-  id              String   @id @default(uuid()) 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  name            String
-  laneId          String
-  order           Int      @default(0)
-  value           Decimal?
-  description     String?
-  customerId      String?
-  assignedUserId  String?
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  name           String
+  laneId         String
+  order          Int      @default(0)
+  value          Decimal?
+  description    String?
+  customerId     String?
+  assignedUserId String?
 
-  lane            Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
-  customer        Contact? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  tags            Tag[]
-  assigned        User?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  lane     Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
+  customer Contact? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  tags     Tag[]
+  assigned User?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
 
   @@index([laneId])
   @@index([customerId])
@@ -262,27 +257,27 @@ model Ticket {
 }
 
 model Trigger {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String
-  subAccountId  String
-  type          TriggerTypes
+  id           String       @id @default(uuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  name         String
+  subAccountId String
+  type         TriggerTypes
 
-  subAccount    SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
-  automations   Automation[]
+  subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  automations Automation[]
 
   @@index([subAccountId])
 }
 
 model Automation {
-  id                  String   @id @default(uuid()) 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  name                String
-  triggerId           String?
-  published           Boolean @default(false)
-  subAccountId        String
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  triggerId    String?
+  published    Boolean  @default(false)
+  subAccountId String
 
   trigger             Trigger?             @relation(fields: [triggerId], references: [id], onDelete: Cascade)
   subAccount          SubAccount           @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
@@ -294,18 +289,16 @@ model Automation {
 }
 
 model AutomationInstance {
-  id            String   @id @default(uuid()) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  automationId  String
-  active        Boolean @default(false)
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  automationId String
+  active       Boolean  @default(false)
 
-  automation    Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@index([automationId])
-} 
-
-
+}
 
 model Feedback {
   id         Int      @id @default(autoincrement())
@@ -316,7 +309,7 @@ model Feedback {
 }
 
 model Action {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   name         String
@@ -331,7 +324,7 @@ model Action {
 }
 
 model Contact {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   name         String
@@ -346,7 +339,7 @@ model Contact {
 }
 
 model Media {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   type         String?
@@ -360,17 +353,17 @@ model Media {
 }
 
 model Funnel {
-  id             String   @id @default(uuid()) 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  email          String
-  name           String
-  description    String?
-  published      Boolean  @default(false)
-  subDomainName  String?  @unique
-  favicon        String?
-  subAccountId   String
-  liveProducts   String?  @default("[]")
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  email         String
+  name          String
+  description   String?
+  published     Boolean  @default(false)
+  subDomainName String?  @unique
+  favicon       String?
+  subAccountId  String
+  liveProducts  String?  @default("[]")
 
   subAccount  SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   funnelPages FunnelPage[]
@@ -380,7 +373,7 @@ model Funnel {
 }
 
 model ClassName {
-  id         String   @id @default(uuid()) 
+  id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   name       String
@@ -394,7 +387,7 @@ model ClassName {
 }
 
 model FunnelPage {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   name         String
@@ -412,7 +405,7 @@ model FunnelPage {
 }
 
 model AgencySidebarOption {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String   @default("Menu")
@@ -426,7 +419,7 @@ model AgencySidebarOption {
 }
 
 model SubAccountSidebarOption {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   name         String   @default("Menu")
@@ -440,11 +433,11 @@ model SubAccountSidebarOption {
 }
 
 model Invitation {
-  id       String            @id @default(uuid()) 
-  email    String            @unique
+  id       String           @id @default(uuid())
+  email    String           @unique
   agencyId String
-  status   InvitationStatus  @default(PENDING)
-  role     Role              @default(SUBACCOUNT_USER)
+  status   InvitationStatus @default(PENDING)
+  role     Role             @default(SUBACCOUNT_USER)
 
   agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
@@ -452,54 +445,53 @@ model Invitation {
 }
 
 model Subscription {
-  id                   String   @id @default(uuid()) 
+  id                   String   @id @default(uuid())
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   plan                 Plan?
   price                String?
-  active               Boolean @default(false)
+  active               Boolean  @default(false)
   priceId              String
   customerId           String
   currentPeriodEndDate DateTime
   subscriptionId       String
-  agencyId             String? @unique
+  agencyId             String?  @unique
 
   agency Agency? @relation(fields: [agencyId], references: [id])
 
   @@index([customerId])
-} 
-
-
+}
 
 model AddOns {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   name     String
-  active   Boolean  @default(false)
-  priceId  String   @unique
+  active   Boolean @default(false)
+  priceId  String  @unique
   agencyId String?
 
-  agency   Agency?  @relation(fields: [agencyId], references: [id])
+  agency Agency? @relation(fields: [agencyId], references: [id])
 
   @@index([agencyId])
 }
 
 model Agenda {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   subaccountId String
   title        String
   description  String?
   priority     String
   start        DateTime
+  status       String?  @default("To Do")
   end          DateTime
-  completed   Boolean  @default(false)
+  completed    Boolean  @default(false)
   createdAt    DateTime @default(now())
 }
 
 model Employee {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   name         String
   email        String   @unique
   gender       String
@@ -514,25 +506,25 @@ model Employee {
   id1          String
   createdAt    DateTime @default(now())
 
-  attendances  Attendance[]
-  project      EmployeeProject[]
+  attendances Attendance[]
+  project     EmployeeProject[]
 }
 
 model Attendance {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   employeeId   String
   date         DateTime @default(now())
   subaccountId String
 
-  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([employeeId, date])
 }
 
 model Project {
-  id          String   @id @default(uuid()) 
+  id          String   @id @default(uuid())
   projectId   String
   title       String
   description String
@@ -548,7 +540,7 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  employees   EmployeeProject[]
+  employees EmployeeProject[]
 }
 
 model EmployeeProject {
@@ -561,7 +553,7 @@ model EmployeeProject {
 }
 
 model Lead {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   name      String
   email     String?
   phone     String?
@@ -572,18 +564,18 @@ model Lead {
   createdAt DateTime @default(now())
   message   String
 
-  notes     Note[]
+  notes Note[]
 }
 
 model Note {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   message   String
   behavior  String?
   createdAt DateTime @default(now())
   leadId    String
 
-  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
-} 
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
 
 model Notes {
   id        String   @id @default(cuid())
@@ -593,14 +585,14 @@ model Notes {
 }
 
 model ExpiringNote {
-  id        String   @id @default(uuid()) 
+  id        String   @id @default(uuid())
   content   String   @db.Text
   createdAt DateTime @default(now())
   expiresAt DateTime
 }
 
 model EnvKey {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   subaccountId String   @default("")
   code         String
   language     String
@@ -613,30 +605,30 @@ model EnvKey {
 }
 
 model Product {
-  id          String     @id @default(uuid()) 
+  id          String   @id @default(uuid())
   name        String
   price       Float
   category    String
   description String
   stock       Int
   status      Boolean
-  agencyId    String     @default("")
-  createdAt   DateTime   @default(now())
+  agencyId    String   @default("")
+  createdAt   DateTime @default(now())
 
-  purchase    Purchase[]
+  purchase Purchase[]
 }
 
 model Purchase {
-  id          String   @id @default(uuid()) 
+  id          String   @id @default(uuid())
   userEmail   String
   productId   String
   purchasedAt DateTime @default(now())
 
-  product     Product  @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model Bug {
-  id          String   @id @default(uuid()) 
+  id          String   @id @default(uuid())
   title       String
   description String
   isResolved  Boolean  @default(false)
@@ -646,13 +638,11 @@ model Bug {
 }
 
 model Transaction {
-  id           String   @id @default(uuid()) 
+  id           String   @id @default(uuid())
   title        String
   subaccountid String
   amount       Float
   type         String
-  category     String @default("")
-  date    DateTime @default(now())
+  category     String   @default("")
+  date         DateTime @default(now())
 }
-
-

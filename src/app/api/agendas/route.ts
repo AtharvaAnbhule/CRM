@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         description: body.description || "",
         priority: body.priority || "Medium",
         start: new Date(body.start),
+        status: body.status || "To Do",
         end: new Date(body.end),
       },
     });

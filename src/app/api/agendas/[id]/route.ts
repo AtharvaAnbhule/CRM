@@ -13,6 +13,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         title: data.title,
         description: data.description,
         priority: data.priority,
+        status: data.status || "To Do",
         start: new Date(data.start),
         end: new Date(data.end),
         completed: data.completed,

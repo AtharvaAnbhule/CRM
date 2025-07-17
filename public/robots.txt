@@ -1,9 +1,8 @@
+
+
 User-agent: *
+
 Disallow: /company
 Disallow: /sign-in
 
-Allow: /
-Allow: /About
-Allow: /Services
-Allow: /Features
-Allow: /leads
+

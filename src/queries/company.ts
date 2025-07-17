@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { Plan, type Agency } from "@prisma/client";
-import { clerkClient } from "@clerk/nextjs";
+
 import { logger } from "@/lib/utils";
 
 export const getAgencyDetails = async (agencyId: string) => {
