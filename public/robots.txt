@@ -1,8 +1,6 @@
 
 
 User-agent: *
-
-Disallow: /company
-Disallow: /sign-in
+Disallow: /company/sign-in
 
 
