@@ -3,7 +3,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Stripe from "stripe";
 import { format } from "date-fns";
-import { Clipboard, Contact2, DollarSign, Info, ShoppingCart } from "lucide-react";
+import {
+  Clipboard,
+  Contact2,
+  DollarSign,
+  Info,
+  ShoppingCart,
+} from "lucide-react";
 
 import { getSubAccountDetails } from "@/queries/account";
 import { getFunnels } from "@/queries/funnels";
@@ -137,10 +143,10 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
     ),
   }));
 
-  const projects = getProjectCount(subaccountId); 
-  const employees = getTotalEmployeesBySubaccountId(subaccountId); 
-  const tasks = getAllTaskCountToday(subaccountId); 
-  const transactions = await getTransactionsForSubaccount(subaccountId); 
+  const projects = getProjectCount(subaccountId);
+  const employees = getTotalEmployeesBySubaccountId(subaccountId);
+  const tasks = getAllTaskCountToday(subaccountId);
+  const transactions = await getTransactionsForSubaccount(subaccountId);
 
   return (
     <BlurPage>
@@ -148,13 +154,13 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">Dashboard Overview</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-primary">
+              Dashboard Overview
+            </h1>
             <p className="text-sm text-muted-foreground">
               {format(new Date(), "MMMM d, yyyy")} • {subAccountDetails.name}
             </p>
           </div>
-          
-        
         </div>
 
         {/* Key Metrics Grid */}
@@ -227,7 +233,7 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
         {/* Account Details & Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Account Details Card */}
-      <Card className="lg:col-span-1 hover:shadow-lg transition-shadow">
+          <Card className="lg:col-span-1 hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Account Details</CardTitle>
@@ -236,25 +242,35 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Name</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Name
+                </p>
                 <p className="font-medium">{subAccountDetails.name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Mission</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Mission
+                </p>
                 <p className="font-medium">{subAccountDetails.mission}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Location</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Location
+                </p>
                 <p className="font-medium">
                   {subAccountDetails.state}, {subAccountDetails.country}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Vision</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Vision
+                </p>
                 <p className="font-medium">{subAccountDetails.vision}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Goal</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Goal
+                </p>
                 <p className="font-medium">{subAccountDetails.goal}</p>
               </div>
             </CardContent>
@@ -296,8 +312,7 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
                 <BadgeDelta
                   deltaType="moderateIncrease"
                   isIncreasePositive
-                  size="sm"
-                >
+                  size="sm">
                   +12.3%
                 </BadgeDelta>
                 <FileText className="h-5 w-5 text-primary" />
@@ -317,7 +332,9 @@ const SubAccountPageId: React.FC<SubAccountPageIdProps> = async ({
                 </TableHeader>
                 <TableBody>
                   {transactions.map((transaction) => (
-                    <TableRow key={transaction.id} className="hover:bg-muted/50">
+                    <TableRow
+                      key={transaction.id}
+                      className="hover:bg-muted/50">
                       <TableCell className="font-medium">
                         {transaction.id.slice(0, 8)}...
                       </TableCell>
