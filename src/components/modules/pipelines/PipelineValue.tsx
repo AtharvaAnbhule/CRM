@@ -75,52 +75,49 @@ const PipelineValue: React.FC<PipelineValueProps> = ({ subAccountId }) => {
   );
 
   return (
-    <Card className= "relative w-full xl:w-[350px]" >
-    <CardHeader>
-    <CardDescription>Workflow Value </CardDescription>
-      < small className = "text-xs text-muted-foreground" >
-        Workflow Progress
-          </small>
-          < div className = "flex items-center justify-between" >
-            <div>
-            <p className="text-xs text-muted-foreground" >
-              Closed ${ pipelineClosedValue }
-  </p>
-    </div>
-    < div >
-    <p className="text-xs text-muted-foreground" >
-      Total ${ totalPipelineValue + pipelineClosedValue }
-  </p>
-    </div>
-    </div>
-    < Progress color = "green" value = { pipelineRate } className = "h-2" />
+    <Card className="relative w-full xl:w-[250px]">
+      <CardHeader>
+        <CardDescription>Workflow Value </CardDescription>
+        <small className="text-xs text-muted-foreground">
+          Workflow Progress
+        </small>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">
+              Closed ${pipelineClosedValue}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              Total ${totalPipelineValue + pipelineClosedValue}
+            </p>
+          </div>
+        </div>
+        <Progress color="green" value={pipelineRate} className="h-2" />
       </CardHeader>
-      < CardContent className = "text-sm text-muted-foreground" >
-        <p className="mb-2" >
+      <CardContent className="text-sm text-muted-foreground">
+        <p className="mb-2">
           Total value of all tickets in the given workflow except the last lane.
           Your last lane is considered your closing lane in every workflow.
         </p>
-    < Select
-  value = { selectedPipelineId }
-  onValueChange = { setselectedPipelineId }
-    >
-    <SelectTrigger className="w-[180px]" >
-      <SelectValue placeholder="Select a pipeline" />
-        </SelectTrigger>
-        < SelectContent >
-        <SelectGroup>
-        <SelectLabel>Workflow </SelectLabel>
-  {
-    pipelines.map((pipeline) => (
-      <SelectItem value= { pipeline.id } key = { pipeline.id } >
-      { pipeline.name }
-      </SelectItem>
-    ))
-  }
-  </SelectGroup>
-    </SelectContent>
-    </Select>
-    </CardContent>
+        <Select
+          value={selectedPipelineId}
+          onValueChange={setselectedPipelineId}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a pipeline" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Workflow </SelectLabel>
+              {pipelines.map((pipeline) => (
+                <SelectItem value={pipeline.id} key={pipeline.id}>
+                  {pipeline.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </CardContent>
     </Card>
   );
 };
