@@ -59,11 +59,7 @@
 //   const latestCharge = allCharges.length > 0 ? allCharges[0] : null;
 //   charges.data.sort((a, b) => b.created - a.created);
 
-
 //   const charge = await getCharges(agencySubscription?.customerId);
-
-
-
 
 //   return (
 //     <div className="bg-gradient-to-br min-h-screen p-8 dark:text-white">
@@ -72,7 +68,7 @@
 
 //       <h2 className="text-3xl mb-6">Current Plan</h2>
 //       <div className="flex flex-col lg:flex-row gap-8">
-     
+
 //         <Price
 //           isPlanExists={Boolean(isActive)}
 //           prices={prices.data}
@@ -137,7 +133,7 @@
 
 // export const metadata = constructMetadata({
 //   title: "Billing - Vanz.Io",
-// }); 
+// });
 
 "use client";
 
@@ -175,7 +171,8 @@ const PricingCard = ({
   popular = false,
   current = false,
 }: PricingCardProps) => (
-  <Card className={`w-full max-w-md relative overflow-hidden ${current ? "border-2 border-primary" : ""}`}>
+  <Card
+    className={`w-full max-w-md relative overflow-hidden ${current ? "border-2 border-primary" : ""}`}>
     {popular && (
       <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-purple-500 text-white text-xs font-bold px-4 py-1 transform translate-x-2 translate-y-2 rotate-12">
         MOST POPULAR
@@ -199,10 +196,7 @@ const PricingCard = ({
     <CardContent className="space-y-4">
       <div className="space-y-3">
         {features.map((f, i) => (
-          <div
-            key={i}
-            className="flex items-start gap-3 text-sm"
-          >
+          <div key={i} className="flex items-start gap-3 text-sm">
             <CheckCircle2 className="text-green-500 h-5 w-5 flex-shrink-0 mt-0.5" />
             <span>{f}</span>
           </div>
@@ -222,7 +216,16 @@ const CurrentPackageBox = ({ currentPackage }: { currentPackage: any }) => {
   const expiryDate = new Date(currentPackage.dateTaken);
   expiryDate.setMonth(expiryDate.getMonth() + 1);
 
-  const daysRemaining = Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.floor(
+    (expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Show Rs 0 if subscription has expired (daysRemaining <= 0)
+  const displayPrice = daysRemaining > 0 ? currentPackage.price : 0;
+  const statusText =
+    daysRemaining > 0
+      ? `Renews on ${expiryDate.toLocaleDateString()} (${daysRemaining} days remaining)`
+      : "Subscription expired";
 
   return (
     <div className="w-full max-w-4xl mt-12">
@@ -233,36 +236,37 @@ const CurrentPackageBox = ({ currentPackage }: { currentPackage: any }) => {
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
         <CardHeader className="flex flex-row justify-between items-center">
           <div>
-            <CardTitle className="text-2xl">{currentPackage.title} Plan</CardTitle>
+            <CardTitle className="text-2xl">
+              {currentPackage.title} Plan
+            </CardTitle>
             <CardDescription className="mt-2">
-              Active since {new Date(currentPackage.dateTaken).toLocaleDateString()}
+              Active since{" "}
+              {new Date(currentPackage.dateTaken).toLocaleDateString()}
             </CardDescription>
           </div>
           <div className="text-right">
-            <span className="text-3xl font-bold">Rs {currentPackage.price}</span>
-            <span className="text-muted-foreground block text-sm">per month</span>
+            <span className="text-3xl font-bold">Rs {displayPrice}</span>
+            <span className="text-muted-foreground block text-sm">
+              {daysRemaining > 0 ? "per month" : "subscription expired"}
+            </span>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Renews on</p>
-              <p className="font-medium">
-                {expiryDate.toLocaleDateString()} ({daysRemaining} days remaining)
-              </p>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="font-medium">{statusText}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Plan includes</p>
               <p className="font-medium">{currentPackage.description}</p>
             </div>
-            
           </div>
         </CardContent>
       </Card>
     </div>
   );
 };
-
 export default function Page() {
   const pathname = usePathname();
   const pathParts = pathname.split("/");
@@ -389,8 +393,13 @@ export default function Page() {
       {currentPackage && <CurrentPackageBox currentPackage={currentPackage} />}
 
       <div className="mt-16 text-center text-sm text-muted-foreground">
-        <p>Need something custom? Contact our sales team for enterprise solutions.</p>
-        <p className="mt-2">All plans come with a 14-day money-back guarantee.</p>
+        <p>
+          Need something custom? Contact our sales team for enterprise
+          solutions.
+        </p>
+        <p className="mt-2">
+          All plans come with a 14-day money-back guarantee.
+        </p>
       </div>
     </div>
   );
