@@ -2,11 +2,11 @@ import MeetingTypeList from "../../components/meeting-type-list";
 
 export default function Home() {
   const now = new Date();
-  const time = now.toLocaleTimeString("en-US", {
+  const time = now.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const date = new Intl.DateTimeFormat("en-US", {
+  const date = new Intl.DateTimeFormat("en-In", {
     dateStyle: "full",
   }).format(now);
 
