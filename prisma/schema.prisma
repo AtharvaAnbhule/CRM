@@ -484,7 +484,7 @@ model Agenda {
   description  String?
   priority     String
   start        DateTime
-  status       String?  @default("To Do")
+  status       String?   @default("To Do")
   end          DateTime
   completed    Boolean  @default(false)
   createdAt    DateTime @default(now())

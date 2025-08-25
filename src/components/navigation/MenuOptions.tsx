@@ -325,14 +325,7 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
           {/* Logout Button at Bottom */}
           <div className="mt-auto pt-4">
             <Separator className="mb-4 border-gray-300 dark:border-gray-600" />
-            <Button
-              variant="ghost"
-              //@ts-ignore
-              onClick={() => signOut({ redirectUrl: "/" })}
-              className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-              <LogOut />
-              <span> Logout </span>
-            </Button>
+
             {!window.location.pathname.includes("account") && (
               <>
                 <Button
@@ -519,6 +512,15 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
                 </Button>
               </>
             )}
+
+            <Button
+              variant="ghost"
+              //@ts-ignore
+              onClick={() => signOut({ redirectUrl: "/" })}
+              className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+              <LogOut />
+              <span> Logout </span>
+            </Button>
             <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r bottom-3 from-pink-400 to-purple-600 rounded-2xl shadow-lg text-white mx-auto">
               <h2 className="text-lg font-semibold text-center">
                 Upgrade to <span className="font-bold"> PRO </span> to get

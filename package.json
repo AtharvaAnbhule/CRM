@@ -26,6 +26,7 @@
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
+    "@googlemaps/google-maps-services-js": "^3.4.2",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^3.3.4",
     "@prisma/client": "^5.9.1",

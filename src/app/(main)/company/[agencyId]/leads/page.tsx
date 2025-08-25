@@ -21,6 +21,7 @@ import { Loader } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import LeadDrawer from "./LeadDrawer";
+import { useRouter } from "next/navigation";
 
 interface Lead {
   id: string;
@@ -38,34 +39,115 @@ interface Lead {
 }
 
 const categories = [
-  "Real Estate", "Finance", "Technology", "Healthcare", "Marketing", "Software",
-  "Education", "Automotive", "E-commerce", "Retail", "Manufacturing", "Logistics",
-  "Construction", "Entertainment", "Hospitality", "Travel & Tourism", "Legal Services",
-  "Insurance", "Telecommunications", "Agriculture", "Food & Beverage", "Renewable Energy",
-  "Biotechnology", "Pharmaceuticals", "Cybersecurity", "Artificial Intelligence",
-  "Blockchain", "Gaming", "Aerospace", "Fashion", "Media & Journalism", "Music & Arts",
-  "Human Resources", "Sports & Fitness", "Event Management", "Non-Profit & NGOs",
-  "Public Relations", "Government & Politics", "Military & Defense", "Mining & Metals",
-  "Consulting", "Architecture & Design", "Consumer Electronics", "Cloud Computing",
-  "Data Science", "Engineering", "Venture Capital", "Private Equity",
-  "Supply Chain Management", "Waste Management", "AR & VR", "Robotics", "Home Improvement",
-  "Interior Design", "Pet Care", "Environmental Science", "Telecommunications Infrastructure",
-  "Electric Vehicles", "Transportation & Mobility", "Social Media", "SaaS", "Podcasting",
-  "Content Creation", "Freelancing", "UX/UI Design", "Digital Marketing", "Influencer Marketing",
-  "Market Research", "Crowdfunding", "Subscription Services", "Spiritual & Wellness",
-  "Mental Health", "Childcare & Parenting", "Seniors & Geriatric Care", "Science & Research",
-  "Astronomy & Space Exploration", "Food Delivery & Meal Kits", "LegalTech", "EdTech",
-  "PropTech", "AdTech", "FinTech", "HealthTech", "InsurTech", "AgriTech", "Green Energy",
-  "3D Printing", "Autonomous Vehicles", "Smart Homes", "Drones", "Quantum Computing",
-  "Ethical Hacking", "Cryptocurrency", "Online Learning", "Job Portals", "Stock Market",
-  "Luxury Goods", "Tattoo & Body Art", "Handmade & Crafts", "Fishing & Hunting",
-  "Self-Improvement", "Virtual Events"
+  "Real Estate",
+  "Finance",
+  "Technology",
+  "Healthcare",
+  "Marketing",
+  "Software",
+  "Education",
+  "Automotive",
+  "E-commerce",
+  "Retail",
+  "Manufacturing",
+  "Logistics",
+  "Construction",
+  "Entertainment",
+  "Hospitality",
+  "Travel & Tourism",
+  "Legal Services",
+  "Insurance",
+  "Telecommunications",
+  "Agriculture",
+  "Food & Beverage",
+  "Renewable Energy",
+  "Biotechnology",
+  "Pharmaceuticals",
+  "Cybersecurity",
+  "Artificial Intelligence",
+  "Blockchain",
+  "Gaming",
+  "Aerospace",
+  "Fashion",
+  "Media & Journalism",
+  "Music & Arts",
+  "Human Resources",
+  "Sports & Fitness",
+  "Event Management",
+  "Non-Profit & NGOs",
+  "Public Relations",
+  "Government & Politics",
+  "Military & Defense",
+  "Mining & Metals",
+  "Consulting",
+  "Architecture & Design",
+  "Consumer Electronics",
+  "Cloud Computing",
+  "Data Science",
+  "Engineering",
+  "Venture Capital",
+  "Private Equity",
+  "Supply Chain Management",
+  "Waste Management",
+  "AR & VR",
+  "Robotics",
+  "Home Improvement",
+  "Interior Design",
+  "Pet Care",
+  "Environmental Science",
+  "Telecommunications Infrastructure",
+  "Electric Vehicles",
+  "Transportation & Mobility",
+  "Social Media",
+  "SaaS",
+  "Podcasting",
+  "Content Creation",
+  "Freelancing",
+  "UX/UI Design",
+  "Digital Marketing",
+  "Influencer Marketing",
+  "Market Research",
+  "Crowdfunding",
+  "Subscription Services",
+  "Spiritual & Wellness",
+  "Mental Health",
+  "Childcare & Parenting",
+  "Seniors & Geriatric Care",
+  "Science & Research",
+  "Astronomy & Space Exploration",
+  "Food Delivery & Meal Kits",
+  "LegalTech",
+  "EdTech",
+  "PropTech",
+  "AdTech",
+  "FinTech",
+  "HealthTech",
+  "InsurTech",
+  "AgriTech",
+  "Green Energy",
+  "3D Printing",
+  "Autonomous Vehicles",
+  "Smart Homes",
+  "Drones",
+  "Quantum Computing",
+  "Ethical Hacking",
+  "Cryptocurrency",
+  "Online Learning",
+  "Job Portals",
+  "Stock Market",
+  "Luxury Goods",
+  "Tattoo & Body Art",
+  "Handmade & Crafts",
+  "Fishing & Hunting",
+  "Self-Improvement",
+  "Virtual Events",
 ];
 
 const LeadTable: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
@@ -83,6 +165,10 @@ const LeadTable: React.FC = () => {
     }
   };
 
+  const getleads = () => {
+    router.push("leads/generate");
+  };
+
   const downloadPDF = () => {
     if (leads.length === 0) return;
 
@@ -90,7 +176,9 @@ const LeadTable: React.FC = () => {
     doc.text("Leads Report", 14, 10);
 
     autoTable(doc, {
-      head: [["Name", "Email", "Phone", "Category", "Source", "Date", "Message"]],
+      head: [
+        ["Name", "Email", "Phone", "Category", "Source", "Date", "Message"],
+      ],
       body: leads.map((lead) => [
         lead.name,
         lead.email || "N/A",
@@ -125,12 +213,18 @@ const LeadTable: React.FC = () => {
         </Select>
 
         <Button onClick={fetchLeads} disabled={!selectedCategory || loading}>
-          {loading ? <Loader className="animate-spin w-5 h-5" /> : "Generate Leads"}
+          {loading ? (
+            <Loader className="animate-spin w-5 h-5" />
+          ) : (
+            "Generate Leads"
+          )}
         </Button>
 
         <Button onClick={downloadPDF} disabled={leads.length === 0}>
           Download PDF
         </Button>
+
+        <Button onClick={getleads}>Automated leads</Button>
       </div>
 
       <Table className="border rounded-lg">
@@ -155,8 +249,7 @@ const LeadTable: React.FC = () => {
                 onClick={() => {
                   setSelectedLead(lead);
                   setDrawerOpen(true);
-                }}
-              >
+                }}>
                 <TableCell>{lead.name}</TableCell>
                 <TableCell>{lead.email || "N/A"}</TableCell>
                 <TableCell>{lead.phone || "N/A"}</TableCell>
@@ -169,15 +262,17 @@ const LeadTable: React.FC = () => {
                 <TableCell className="flex gap-2">
                   <a
                     href={`mailto:${lead.email}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button variant="outline" size="sm">Email</Button>
+                    onClick={(e) => e.stopPropagation()}>
+                    <Button variant="outline" size="sm">
+                      Email
+                    </Button>
                   </a>
                   <a
                     href={`tel:${lead.phone}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button variant="outline" size="sm">Call</Button>
+                    onClick={(e) => e.stopPropagation()}>
+                    <Button variant="outline" size="sm">
+                      Call
+                    </Button>
                   </a>
                 </TableCell>
               </TableRow>
@@ -190,111 +285,127 @@ const LeadTable: React.FC = () => {
             </TableRow>
           )}
         </TableBody>
-      </Table> 
-
+      </Table>
 
       {/* Deal Done Leads */}
-{leads.filter((lead) => lead.status === "Deal Done").length > 0 && (
-  <div className="mb-10">
-    <h3 className="text-lg font-semibold mb-2">Deal Done Leads</h3>
-    <Table className="border rounded-lg">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Source</TableHead>
-          <TableHead>Message</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {leads
-          .filter((lead) => lead.status === "Deal Done")
-          .map((lead) => (
-            <TableRow
-              key={lead.id}
-              className="cursor-pointer"
-              onClick={() => {
-                setSelectedLead(lead);
-                setDrawerOpen(true);
-              }}
-            >
-              <TableCell>{lead.name}</TableCell>
-              <TableCell>{lead.email || "N/A"}</TableCell>
-              <TableCell>{lead.phone || "N/A"}</TableCell>
-              <TableCell>{lead.Category}</TableCell>
-              <TableCell>{lead.source}</TableCell>
-              <TableCell>{lead.message}</TableCell>
-              <TableCell>{new Date(lead.createdAt).toLocaleDateString()}</TableCell>
-              <TableCell className="flex gap-2">
-                <a href={`mailto:${lead.email}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm">Email</Button>
-                </a>
-                <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm">Call</Button>
-                </a>
-              </TableCell>
-            </TableRow>
-          ))}
-      </TableBody>
-    </Table>
-  </div>
-)}
+      {leads.filter((lead) => lead.status === "Deal Done").length > 0 && (
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold mb-2">Deal Done Leads</h3>
+          <Table className="border rounded-lg">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Message</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leads
+                .filter((lead) => lead.status === "Deal Done")
+                .map((lead) => (
+                  <TableRow
+                    key={lead.id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setSelectedLead(lead);
+                      setDrawerOpen(true);
+                    }}>
+                    <TableCell>{lead.name}</TableCell>
+                    <TableCell>{lead.email || "N/A"}</TableCell>
+                    <TableCell>{lead.phone || "N/A"}</TableCell>
+                    <TableCell>{lead.Category}</TableCell>
+                    <TableCell>{lead.source}</TableCell>
+                    <TableCell>{lead.message}</TableCell>
+                    <TableCell>
+                      {new Date(lead.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="flex gap-2">
+                      <a
+                        href={`mailto:${lead.email}`}
+                        onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm">
+                          Email
+                        </Button>
+                      </a>
+                      <a
+                        href={`tel:${lead.phone}`}
+                        onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm">
+                          Call
+                        </Button>
+                      </a>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
-{/* On Hold Leads */}
-{leads.filter((lead) => lead.status === "On Hold").length > 0 && (
-  <div>
-    <h3 className="text-lg font-semibold mb-2">On Hold Leads</h3>
-    <Table className="border rounded-lg">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Source</TableHead>
-          <TableHead>Message</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {leads
-          .filter((lead) => lead.status === "On Hold")
-          .map((lead) => (
-            <TableRow
-              key={lead.id}
-              className="cursor-pointer"
-              onClick={() => {
-                setSelectedLead(lead);
-                setDrawerOpen(true);
-              }}
-            >
-              <TableCell>{lead.name}</TableCell>
-              <TableCell>{lead.email || "N/A"}</TableCell>
-              <TableCell>{lead.phone || "N/A"}</TableCell>
-              <TableCell>{lead.Category}</TableCell>
-              <TableCell>{lead.source}</TableCell>
-              <TableCell>{lead.message}</TableCell>
-              <TableCell>{new Date(lead.createdAt).toLocaleDateString()}</TableCell>
-              <TableCell className="flex gap-2">
-                <a href={`mailto:${lead.email}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm">Email</Button>
-                </a>
-                <a href={`tel:${lead.phone}`} onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm">Call</Button>
-                </a>
-              </TableCell>
-            </TableRow>
-          ))}
-      </TableBody>
-    </Table>
-  </div>
-)}
-
+      {/* On Hold Leads */}
+      {leads.filter((lead) => lead.status === "On Hold").length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">On Hold Leads</h3>
+          <Table className="border rounded-lg">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Message</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leads
+                .filter((lead) => lead.status === "On Hold")
+                .map((lead) => (
+                  <TableRow
+                    key={lead.id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setSelectedLead(lead);
+                      setDrawerOpen(true);
+                    }}>
+                    <TableCell>{lead.name}</TableCell>
+                    <TableCell>{lead.email || "N/A"}</TableCell>
+                    <TableCell>{lead.phone || "N/A"}</TableCell>
+                    <TableCell>{lead.Category}</TableCell>
+                    <TableCell>{lead.source}</TableCell>
+                    <TableCell>{lead.message}</TableCell>
+                    <TableCell>
+                      {new Date(lead.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="flex gap-2">
+                      <a
+                        href={`mailto:${lead.email}`}
+                        onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm">
+                          Email
+                        </Button>
+                      </a>
+                      <a
+                        href={`tel:${lead.phone}`}
+                        onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm">
+                          Call
+                        </Button>
+                      </a>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* Lead Drawer */}
       <LeadDrawer
