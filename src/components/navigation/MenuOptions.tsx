@@ -325,7 +325,6 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
           {/* Logout Button at Bottom */}
           <div className="mt-auto pt-4">
             <Separator className="mb-4 border-gray-300 dark:border-gray-600" />
-
             {!window.location.pathname.includes("account") && (
               <>
                 <Button
