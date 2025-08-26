@@ -211,20 +211,25 @@ const LeadTable: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
+        <div className="flex md:flex-row flex-col gap-2">
+          <Button onClick={fetchLeads} disabled={!selectedCategory || loading}>
+            {loading ? (
+              <Loader className="animate-spin w-5 h-5" />
+            ) : (
+              "Generate Leads"
+            )}
+          </Button>
 
-        <Button onClick={fetchLeads} disabled={!selectedCategory || loading}>
-          {loading ? (
-            <Loader className="animate-spin w-5 h-5" />
-          ) : (
-            "Generate Leads"
-          )}
-        </Button>
-
-        <Button onClick={downloadPDF} disabled={leads.length === 0}>
-          Download PDF
-        </Button>
-
-        <Button onClick={getleads}>Automated leads</Button>
+          <Button onClick={downloadPDF} disabled={leads.length === 0}>
+            Download PDF
+          </Button>
+        </div>
+        <div className="flex md:flex-row flex-col gap-2">
+          <Button onClick={getleads}>Automated leads</Button>
+          <Button onClick={() => router.push("leads/upload")}>
+            Private leads
+          </Button>
+        </div>
       </div>
 
       <Table className="border rounded-lg">

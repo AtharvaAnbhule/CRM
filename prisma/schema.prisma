@@ -123,6 +123,37 @@ model Agency {
   notifications  Notification[]
   subscriptions  Subscription?
   addOns         AddOns[]
+  leads          Leads[]
+}
+
+model Leads {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  status    String   @default("new") // new, contacted, interested, qualified, unqualified
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  agencyId  String
+  Notes     nottt[] // Add this relation field
+
+  @@unique([email, agencyId])
+  @@map("leads")
+}
+
+model nottt {
+  id        String   @id @default(cuid())
+  message   String
+  behavior  String?
+  createdAt DateTime @default(now())
+  leadId    String
+
+  // Correct the relation to use "Leads" instead of "Lead"
+  lead Leads @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
 }
 
 model SubAccount {
@@ -484,7 +515,7 @@ model Agenda {
   description  String?
   priority     String
   start        DateTime
-  status       String?   @default("To Do")
+  status       String?  @default("To Do")
   end          DateTime
   completed    Boolean  @default(false)
   createdAt    DateTime @default(now())
