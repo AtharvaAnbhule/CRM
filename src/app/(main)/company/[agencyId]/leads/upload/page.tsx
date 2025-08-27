@@ -45,6 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { MessageCircle } from "lucide-react"; // Import WhatsApp icon
 
 // Define the Lead interface
 interface Lead {
@@ -93,6 +94,26 @@ export default function LeadsPage() {
 
   const pathParts = pathname.split("/");
   const agencyId = pathParts[2];
+
+  // Function to generate WhatsApp link
+  const getWhatsAppLink = (phone: string, message: string = "") => {
+    // Clean phone number - remove non-digit characters
+    const cleanedPhone = phone.replace(/\D/g, "");
+
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message);
+
+    return `https://wa.me/${cleanedPhone}?text=${encodedMessage}`;
+  };
+
+  // Function to handle WhatsApp contact
+  const handleWhatsAppContact = (lead: Lead) => {
+    // Create a default message
+    const defaultMessage = `Hello ${lead.name}, I'm reaching out from our agency.`;
+
+    // Open WhatsApp with the pre-filled message
+    window.open(getWhatsAppLink(lead.phone, defaultMessage), "_blank");
+  };
 
   // Fetch all leads for the agency
   const fetchAllLeads = async () => {
@@ -653,7 +674,7 @@ export default function LeadsPage() {
                       {existingLeads.map((lead) => (
                         <TableRow
                           key={lead.id}
-                          className="cursor-pointer hover:bg-gray-50"
+                          className="cursor-pointer hover:bg-gray-700"
                           onClick={() => fetchLeadDetails(lead.id)}>
                           <TableCell className="font-medium">
                             {lead.name}
@@ -684,6 +705,17 @@ export default function LeadsPage() {
                                 }}>
                                 Call
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleWhatsAppContact(lead);
+                                }}
+                                className="bg-green-600 hover:bg-green-700 text-white">
+                                <MessageCircle className="h-4 w-4 mr-1" />
+                                WhatsApp
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -695,14 +727,14 @@ export default function LeadsPage() {
                     <svg
                       className="mx-auto h-12 w-12 text-gray-400"
                       fill="none"
-                      viewBox="0 0 24 24"
+                      viewBox="0 极狐 24 24"
                       stroke="currentColor"
                       aria-hidden="true">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 极狐 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                       />
                     </svg>
                     <h3 className="mt-2 text-sm font-medium text-gray-900">
@@ -778,6 +810,30 @@ export default function LeadsPage() {
                     </div>
                   </div>
 
+                  {/* Contact Actions */}
+                  <div className="flex space-x-4">
+                    <Button
+                      onClick={() =>
+                        window.open(`mailto:${selectedLead.email}`, "_blank")
+                      }
+                      variant="outline">
+                      Email
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        window.open(`tel:${selectedLead.phone}`, "_blank")
+                      }
+                      variant="outline">
+                      Call
+                    </Button>
+                    <Button
+                      onClick={() => handleWhatsAppContact(selectedLead)}
+                      className="bg-green-600 hover:bg-green-700 text-white">
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      WhatsApp
+                    </Button>
+                  </div>
+
                   <div>
                     <h3 className="font-semibold mb-4">Notes</h3>
                     {fetchingNotes ? (
@@ -799,34 +855,6 @@ export default function LeadsPage() {
                               </span>
                             </div>
                             <p className="text-sm">{note.message}</p>
-
-                            {/* Edit and Delete buttons */}
-                            <div className="absolute top-2 right-2 flex space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEditNoteDialog(note);
-                                }}>
-                                Edit
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (
-                                    confirm(
-                                      "Are you sure you want to delete this note?"
-                                    )
-                                  ) {
-                                    deleteNote(note.id);
-                                  }
-                                }}>
-                                Delete
-                              </Button>
-                            </div>
                           </div>
                         ))}
                       </div>

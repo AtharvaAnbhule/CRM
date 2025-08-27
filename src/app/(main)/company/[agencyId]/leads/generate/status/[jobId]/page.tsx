@@ -8,7 +8,17 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 
-import { Check, X, Loader2 } from "lucide-react";
+import {
+  Check,
+  X,
+  Loader2,
+  Download,
+  Building2,
+  Phone,
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface Lead {
   name: string;
@@ -33,6 +43,8 @@ export default function JobStatusPage() {
   const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [leadsPerPage] = useState(10);
 
   useEffect(() => {
     if (!jobId) return;
@@ -74,7 +86,7 @@ export default function JobStatusPage() {
 
       if (!response.ok) throw new Error("Failed to save leads");
 
-      router.push("/leads?success=true");
+      router.back();
     } catch (error) {
       setSaveError(
         error instanceof Error ? error.message : "Failed to save leads"
@@ -92,20 +104,46 @@ export default function JobStatusPage() {
     );
   };
 
+  const selectAllLeads = () => {
+    if (selectedLeads.length === currentLeads.length) {
+      setSelectedLeads([]);
+    } else {
+      setSelectedLeads([...currentLeads]);
+    }
+  };
+
+  // Pagination logic
+  const indexOfLastLead = currentPage * leadsPerPage;
+  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+  const currentLeads =
+    jobStatus?.leads?.slice(indexOfFirstLead, indexOfLastLead) || [];
+  const totalPages = Math.ceil((jobStatus?.leads?.length || 0) / leadsPerPage);
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col justify-center items-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading job status...</p>
       </div>
     );
   }
 
   if (!jobStatus) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
-            <p>Unable to load job status</p>
+            <X className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">
+              Unable to load job status
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              The requested job could not be found.
+            </p>
+            <Button onClick={() => router.push("/leads/generate")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Generator
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -113,49 +151,55 @@ export default function JobStatusPage() {
   }
 
   return (
-    <>
-      <div className="mb-6 mt-6 ml-6">
-        <Link
-          href="/leads/generate"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Generator
-        </Link>
-      </div>
+    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Lead Generation Status</CardTitle>
+        <Card className="mb-8 border-border">
+          <CardHeader className="bg-muted/50 pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Lead Generation Status
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
               <div>
-                <div className="flex justify-between mb-2">
-                  <span>Progress:</span>
+                <div className="flex justify-between mb-2 text-sm font-medium">
+                  <span>Processing:</span>
                   <span>{jobStatus.progress}%</span>
                 </div>
                 <Progress value={jobStatus.progress} className="h-2" />
               </div>
 
               <div className="flex items-center">
-                <span className="w-32">Status:</span>
+                <span className="w-32 font-medium">Status:</span>
                 <span
-                  className={`font-medium ${
+                  className={`inline-flex items-center font-medium px-2.5 py-0.5 rounded-full text-xs ${
                     jobStatus.status === "completed"
-                      ? "text-green-500"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                       : jobStatus.status === "failed"
-                        ? "text-red-500"
-                        : "text-blue-500"
+                        ? "bg-destructive/10 text-destructive dark:bg-destructive/20"
+                        : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                   }`}>
-                  {jobStatus.status}
                   {jobStatus.status === "active" && (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin inline" />
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                   )}
+                  {jobStatus.status.charAt(0).toUpperCase() +
+                    jobStatus.status.slice(1)}
                 </span>
               </div>
 
               {jobStatus.error && (
-                <div className="p-3 bg-red-100 text-red-700 rounded">
+                <div className="p-3 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm">
                   {jobStatus.error}
                 </div>
               )}
@@ -165,86 +209,182 @@ export default function JobStatusPage() {
 
         {jobStatus.leads.length > 0 && (
           <>
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">
-                Generated Leads ({jobStatus.leads.length})
-              </h2>
-              <div className="text-sm text-muted-foreground">
-                Selected: {selectedLeads.length}
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-800">
-                    <th className="p-3 text-left">Select</th>
-                    <th className="p-3 text-left">Business Name</th>
-                    <th className="p-3 text-left">Phone</th>
-                    <th className="p-3 text-left">Category</th>
-                    <th className="p-3 text-left">Email</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobStatus.leads.map((lead, index) => (
-                    <tr
-                      key={index}
-                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                      <td className="p-3">
-                        <button
-                          onClick={() => toggleLeadSelection(lead)}
-                          className={`p-1 rounded-full ${
-                            selectedLeads.some(
-                              (l) =>
-                                l.name === lead.name && l.phone === lead.phone
-                            )
-                              ? "bg-violet-100 text-violet-600"
-                              : "bg-gray-100 text-gray-400"
-                          }`}>
-                          {selectedLeads.some(
-                            (l) =>
-                              l.name === lead.name && l.phone === lead.phone
-                          ) ? (
+            <Card className="border-border">
+              <CardHeader className="bg-muted/50 py-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    Generated Leads ({jobStatus.leads.length})
+                  </CardTitle>
+                  <div className="text-sm text-muted-foreground">
+                    Selected: {selectedLeads.length} of {jobStatus.leads.length}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="p-3 text-left">
+                          <button
+                            onClick={selectAllLeads}
+                            className={`p-1.5 rounded-md ${
+                              selectedLeads.length === currentLeads.length &&
+                              currentLeads.length > 0
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}>
                             <Check className="h-4 w-4" />
-                          ) : (
-                            <X className="h-4 w-4" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="p-3">{lead.name}</td>
-                      <td className="p-3">{lead.phone || "N/A"}</td>
-                      <td className="p-3">{lead.Category}</td>
-                      {lead.email || "N/A"}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </button>
+                        </th>
+                        <th className="p-3 text-left font-medium text-sm">
+                          Business Name
+                        </th>
+                        <th className="p-3 text-left font-medium text-sm">
+                          Phone
+                        </th>
+                        <th className="p-3 text-left font-medium text-sm">
+                          Category
+                        </th>
+                        <th className="p-3 text-left font-medium text-sm">
+                          Email
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentLeads.map((lead, index) => {
+                        const isSelected = selectedLeads.some(
+                          (l) => l.name === lead.name && l.phone === lead.phone
+                        );
+                        return (
+                          <tr
+                            key={index}
+                            className={`border-b border-border hover:bg-muted/30 transition-colors ${
+                              isSelected ? "bg-primary/5" : ""
+                            }`}>
+                            <td className="p-3">
+                              <button
+                                onClick={() => toggleLeadSelection(lead)}
+                                className={`p-1.5 rounded-md ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground"
+                                    : "border border-border hover:bg-muted"
+                                }`}>
+                                {isSelected ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <X className="h-4 w-4" />
+                                )}
+                              </button>
+                            </td>
+                            <td className="p-3 font-medium">{lead.name}</td>
+                            <td className="p-3">
+                              {lead.phone ? (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3 text-muted-foreground" />
+                                  {lead.phone}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  N/A
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground">
+                                {lead.Category}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              {lead.email ? (
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3 text-muted-foreground" />
+                                  {lead.email}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  N/A
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
 
-            <div className="mt-6 flex justify-end">
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between p-4 border-t border-border">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {indexOfFirstLead + 1}-
+                      {Math.min(indexOfLastLead, jobStatus.leads.length)} of{" "}
+                      {jobStatus.leads.length} leads
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}>
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={currentPage === totalPages}>
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedLeads([...jobStatus.leads])}
+                disabled={selectedLeads.length === jobStatus.leads.length}>
+                <Check className="h-4 w-4 mr-2" />
+                Select All
+              </Button>
               <Button
                 onClick={handleSaveLeads}
                 disabled={selectedLeads.length === 0 || isSaving}
-                className="bg-violet-600 hover:bg-violet-700">
+                className="bg-primary hover:bg-primary/90">
                 {isSaving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
-                  `Save Selected Leads (${selectedLeads.length})`
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Save Selected Leads ({selectedLeads.length})
+                  </>
                 )}
               </Button>
             </div>
 
             {saveError && (
-              <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
+              <div className="mt-4 p-3 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm">
                 {saveError}
               </div>
             )}
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }
