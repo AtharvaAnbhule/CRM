@@ -223,8 +223,7 @@ const LeadTable: React.FC = () => {
           <Button onClick={downloadPDF} disabled={leads.length === 0}>
             Download PDF
           </Button>
-        </div>
-        <div className="flex md:flex-row flex-col gap-2">
+
           <Button onClick={getleads}>Automated leads</Button>
           <Button onClick={() => router.push("leads/upload")}>
             Private leads

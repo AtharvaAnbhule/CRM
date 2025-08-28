@@ -2,8 +2,4 @@
 
 User-agent: *
 Disallow: /company/sign-in
-<<<<<<< HEAD
-=======
-
->>>>>>> 92ecd481f803e33e05677d7156e70f14f96d73e6
 

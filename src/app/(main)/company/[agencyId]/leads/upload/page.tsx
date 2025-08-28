@@ -45,7 +45,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MessageCircle } from "lucide-react"; // Import WhatsApp icon
+import { MessageCircle, Filter, X, Calendar } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 // Define the Lead interface
 interface Lead {
@@ -67,9 +75,19 @@ interface Note {
   leadId: string;
 }
 
+// Filter types
+interface Filters {
+  status: string;
+  search: string;
+  dateRange: {
+    from: Date | null;
+    to: Date | null;
+  };
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [existingLeads, setExistingLeads] = useState<Lead[]>([]);
+  const [allLeads, setAllLeads] = useState<Lead[]>([]); // Store all leads for filtering
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,8 +104,19 @@ export default function LeadsPage() {
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fetchingNotes, setFetchingNotes] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const { userId } = useAuth();
   const pathname = usePathname();
+
+  // Initialize filters
+  const [filters, setFilters] = useState<Filters>({
+    status: "all",
+    search: "",
+    dateRange: {
+      from: null,
+      to: null,
+    },
+  });
 
   // Use a ref to track which leads have had their notes fetched
   const fetchedNotesLeads = useRef<Set<string>>(new Set());
@@ -115,6 +144,51 @@ export default function LeadsPage() {
     window.open(getWhatsAppLink(lead.phone, defaultMessage), "_blank");
   };
 
+  // Filter leads based on filter criteria
+  const filterLeads = useCallback(() => {
+    let filtered = [...allLeads];
+
+    // Filter by status
+    if (filters.status !== "all") {
+      filtered = filtered.filter((lead) => lead.status === filters.status);
+    }
+
+    // Filter by search term
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (lead) =>
+          lead.name.toLowerCase().includes(searchTerm) ||
+          lead.email.toLowerCase().includes(searchTerm) ||
+          lead.phone.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filter by date range
+    if (filters.dateRange.from) {
+      filtered = filtered.filter((lead) => {
+        const leadDate = new Date(lead.createdAt);
+        return leadDate >= filters.dateRange.from!;
+      });
+    }
+
+    if (filters.dateRange.to) {
+      filtered = filtered.filter((lead) => {
+        const leadDate = new Date(lead.createdAt);
+        leadDate.setHours(23, 59, 59, 999); // End of day
+        return leadDate <= filters.dateRange.to!;
+      });
+    }
+
+    return filtered;
+  }, [allLeads, filters]);
+
+  // Apply filters whenever filters or allLeads change
+  useEffect(() => {
+    const filteredLeads = filterLeads();
+    setLeads(filteredLeads);
+  }, [filterLeads]);
+
   // Fetch all leads for the agency
   const fetchAllLeads = async () => {
     if (!agencyId) return;
@@ -125,7 +199,8 @@ export default function LeadsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setExistingLeads(data.leads || []);
+        setAllLeads(data.leads || []);
+        setLeads(data.leads || []);
       } else {
         throw new Error("Failed to fetch leads");
       }
@@ -312,8 +387,8 @@ export default function LeadsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update in existing leads
-        setExistingLeads((prev) =>
+        // Update in all leads
+        setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === id ? { ...lead, status: data.lead.status } : lead
           )
@@ -459,6 +534,49 @@ export default function LeadsPage() {
       console.error("Error deleting note:", error);
       alert("Error deleting note. Please try again.");
     }
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (key: keyof Filters, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleDateRangeChange = (
+    key: keyof Filters["dateRange"],
+    value: Date | null
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      dateRange: {
+        ...prev.dateRange,
+        [key]: value,
+      },
+    }));
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      status: "all",
+      search: "",
+      dateRange: {
+        from: null,
+        to: null,
+      },
+    });
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = () => {
+    return (
+      filters.status !== "all" ||
+      filters.search !== "" ||
+      filters.dateRange.from !== null ||
+      filters.dateRange.to !== null
+    );
   };
 
   // Render status badge with appropriate color
@@ -649,16 +767,167 @@ export default function LeadsPage() {
                       View and manage all leads for your agency.
                     </CardDescription>
                   </div>
-                  <Button
-                    onClick={fetchAllLeads}
-                    disabled={fetching}
-                    variant="outline">
-                    {fetching ? "Refreshing..." : "Refresh Leads"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowFilters(!showFilters)}
+                      variant="outline"
+                      className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      Filters
+                      {hasActiveFilters() && (
+                        <Badge variant="secondary" className="ml-1">
+                          Active
+                        </Badge>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={fetchAllLeads}
+                      disabled={fetching}
+                      variant="outline">
+                      {fetching ? "Refreshing..." : "Refresh Leads"}
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Filters Section */}
+                {showFilters && (
+                  <div className="mt-4 p-4 border rounded-lg bg-gray-900">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold">Filter Leads</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFilters}
+                        disabled={!hasActiveFilters()}>
+                        Clear All
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Status Filter */}
+                      <div className="space-y-2">
+                        <Label htmlFor="status-filter">Status</Label>
+                        <Select
+                          value={filters.status}
+                          onValueChange={(value) =>
+                            handleFilterChange("status", value)
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Filter by status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="contacted">Contacted</SelectItem>
+                            <SelectItem value="interested">
+                              Interested
+                            </SelectItem>
+                            <SelectItem value="qualified">Qualified</SelectItem>
+                            <SelectItem value="unqualified">
+                              Unqualified
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Search Filter */}
+                      <div className="space-y-2">
+                        <Label htmlFor="search-filter">Search</Label>
+                        <Input
+                          id="search-filter"
+                          placeholder="Search by name, email, or phone"
+                          value={filters.search}
+                          onChange={(e) =>
+                            handleFilterChange("search", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      {/* Date Range Filter */}
+                      <div className="space-y-2">
+                        <Label>Date Range</Label>
+                        <div className="flex gap-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !filters.dateRange.from &&
+                                    "text-muted-foreground"
+                                )}>
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {filters.dateRange.from ? (
+                                  format(filters.dateRange.from, "PPP")
+                                ) : (
+                                  <span>From</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <CalendarComponent
+                                mode="single"
+                                selected={filters.dateRange.from || undefined}
+                                onSelect={(date) =>
+                                  handleDateRangeChange("from", date)
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !filters.dateRange.to &&
+                                    "text-muted-foreground"
+                                )}>
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {filters.dateRange.to ? (
+                                  format(filters.dateRange.to, "PPP")
+                                ) : (
+                                  <span>To</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <CalendarComponent
+                                mode="single"
+                                selected={filters.dateRange.to || undefined}
+                                onSelect={(date) =>
+                                  handleDateRangeChange("to", date)
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
-                {existingLeads.length > 0 ? (
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {leads.length} of {allLeads.length} leads
+                  </p>
+                  {hasActiveFilters() && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+
+                {leads.length > 0 ? (
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -671,7 +940,7 @@ export default function LeadsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {existingLeads.map((lead) => (
+                      {leads.map((lead) => (
                         <TableRow
                           key={lead.id}
                           className="cursor-pointer hover:bg-gray-700"
@@ -727,7 +996,7 @@ export default function LeadsPage() {
                     <svg
                       className="mx-auto h-12 w-12 text-gray-400"
                       fill="none"
-                      viewBox="0 极狐 24 24"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                       aria-hidden="true">
                       <path
@@ -741,15 +1010,22 @@ export default function LeadsPage() {
                       No leads found
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      Get started by uploading leads or click refresh to check
-                      for existing leads.
+                      {hasActiveFilters()
+                        ? "Try adjusting your filters or clear them to see all leads."
+                        : "Get started by uploading leads or click refresh to check for existing leads."}
                     </p>
-                    <Button
-                      onClick={fetchAllLeads}
-                      disabled={fetching}
-                      className="mt-4">
-                      {fetching ? "Checking..." : "Refresh Leads"}
-                    </Button>
+                    {hasActiveFilters() ? (
+                      <Button onClick={clearFilters} className="mt-4">
+                        Clear Filters
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={fetchAllLeads}
+                        disabled={fetching}
+                        className="mt-4">
+                        {fetching ? "Checking..." : "Refresh Leads"}
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
