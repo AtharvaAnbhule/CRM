@@ -44,8 +44,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { MessageCircle, Filter, X, Calendar } from "lucide-react";
+import { MessageCircle, Filter, X, Calendar, Plus } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -105,6 +106,14 @@ export default function LeadsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fetchingNotes, setFetchingNotes] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
+  const [newLead, setNewLead] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    status: "new" as Lead["status"],
+  });
+  const [creatingLead, setCreatingLead] = useState(false);
   const { userId } = useAuth();
   const pathname = usePathname();
 
@@ -579,6 +588,62 @@ export default function LeadsPage() {
     );
   };
 
+  // Create a lead manually
+  const createLeadManually = async () => {
+    if (
+      !newLead.name.trim() ||
+      !newLead.email.trim() ||
+      !newLead.phone.trim()
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setCreatingLead(true);
+    try {
+      const response = await fetch(`/api/agencies/${agencyId}/lead/upload`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          leads: [
+            {
+              name: newLead.name,
+              email: newLead.email,
+              phone: newLead.phone,
+              status: newLead.status,
+              createdAt: new Date(),
+            },
+          ],
+          userId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert("Lead created successfully!");
+        setIsAddLeadModalOpen(false);
+        setNewLead({
+          name: "",
+          email: "",
+          phone: "",
+          status: "new",
+        });
+        // Refresh the leads list
+        fetchAllLeads();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create lead");
+      }
+    } catch (error) {
+      console.error("Error creating lead:", error);
+      alert("Error creating lead. Please try again.");
+    } finally {
+      setCreatingLead(false);
+    }
+  };
+
   // Render status badge with appropriate color
   const renderStatusBadge = (status: Lead["status"]) => {
     const statusConfig = {
@@ -779,6 +844,12 @@ export default function LeadsPage() {
                           Active
                         </Badge>
                       )}
+                    </Button>
+                    <Button
+                      onClick={() => setIsAddLeadModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Lead
                     </Button>
                     <Button
                       onClick={fetchAllLeads}
@@ -1237,6 +1308,83 @@ export default function LeadsPage() {
               </Button>
               <Button onClick={updateNote}>Save Changes</Button>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Lead Dialog */}
+        <Dialog open={isAddLeadModalOpen} onOpenChange={setIsAddLeadModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Lead</DialogTitle>
+              <DialogDescription>
+                Create a new lead manually. All fields are required.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  value={newLead.name}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, name: e.target.value })
+                  }
+                  placeholder="Enter lead name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newLead.email}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, email: e.target.value })
+                  }
+                  placeholder="Enter email address"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone *</Label>
+                <Input
+                  id="phone"
+                  value={newLead.phone}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, phone: e.target.value })
+                  }
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={newLead.status}
+                  onValueChange={(value: Lead["status"]) =>
+                    setNewLead({ ...newLead, status: value })
+                  }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="contacted">Contacted</SelectItem>
+                    <SelectItem value="interested">Interested</SelectItem>
+                    <SelectItem value="qualified">Qualified</SelectItem>
+                    <SelectItem value="unqualified">Unqualified</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsAddLeadModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createLeadManually} disabled={creatingLead}>
+                {creatingLead ? "Creating..." : "Create Lead"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
