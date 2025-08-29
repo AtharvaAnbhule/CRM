@@ -26,29 +26,29 @@ export const getSubAccountsByAgency = async (agencyId: string) => {
 };
 
 export const upsertSubAccount = async (subAccount: SubAccount) => {
-  if (!subAccount.companyEmail) return null; 
+  if (!subAccount.companyEmail) return null;
 
   const subscription = await db.subscription.findFirst({
-    where: { agencyId:subAccount.agencyId },
+    where: { agencyId: subAccount.agencyId },
   });
 
   const planAmount = subscription?.price || 0; // fallback if no subscription
-  
 
-  if (planAmount == 0 ) {
+
+  if (planAmount == 0) {
     const subaccountCount = await db.subAccount.count({
-      where: { agencyId:subAccount.agencyId },
-    }); 
+      where: { agencyId: subAccount.agencyId },
+    });
 
-    if (subaccountCount >= 2) {
-      return NextResponse.json(
-        { error: "Subaccount limit reached for your current subscription plan." },
-        { status: 403 }
-      );
-    }
+    // if (subaccountCount >= 2) {
+    //   return NextResponse.json(
+    //     { error: "Subaccount limit reached for your current subscription plan." },
+    //     { status: 403 }
+    //   );
+    // }
 
   }
-    
+
 
   const agencyOwner = await db.user.findFirst({
     where: {

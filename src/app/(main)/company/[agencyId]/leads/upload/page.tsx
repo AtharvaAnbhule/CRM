@@ -46,14 +46,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { MessageCircle, Filter, X, Calendar, Plus } from "lucide-react";
+import { MessageCircle, Filter, X, Calendar, Plus, Bell } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isBefore, isAfter, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 
 // Define the Lead interface
@@ -65,6 +65,8 @@ interface Lead {
   status: "new" | "contacted" | "interested" | "qualified" | "unqualified";
   notes?: string;
   createdAt: Date;
+  updatedAt: Date; // Add this field
+  followUpDate: Date | null;
   Notes: Note[];
 }
 
@@ -84,6 +86,7 @@ interface Filters {
     from: Date | null;
     to: Date | null;
   };
+  followUp: "all" | "upcoming" | "overdue" | "today" | "none";
 }
 
 export default function LeadsPage() {
@@ -112,6 +115,7 @@ export default function LeadsPage() {
     email: "",
     phone: "",
     status: "new" as Lead["status"],
+    followUpDate: null as Date | null,
   });
   const [creatingLead, setCreatingLead] = useState(false);
   const { userId } = useAuth();
@@ -125,6 +129,7 @@ export default function LeadsPage() {
       from: null,
       to: null,
     },
+    followUp: "all",
   });
 
   // Use a ref to track which leads have had their notes fetched
@@ -186,6 +191,30 @@ export default function LeadsPage() {
         const leadDate = new Date(lead.createdAt);
         leadDate.setHours(23, 59, 59, 999); // End of day
         return leadDate <= filters.dateRange.to!;
+      });
+    }
+
+    // Filter by follow-up date
+    if (filters.followUp !== "all") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      filtered = filtered.filter((lead) => {
+        if (!lead.followUpDate) return filters.followUp === "none";
+
+        const followUpDate = new Date(lead.followUpDate);
+        followUpDate.setHours(0, 0, 0, 0);
+
+        if (filters.followUp === "upcoming") {
+          return followUpDate > today;
+        } else if (filters.followUp === "overdue") {
+          return followUpDate < today;
+        } else if (filters.followUp === "today") {
+          return isToday(followUpDate);
+        } else if (filters.followUp === "none") {
+          return false;
+        }
+        return true;
       });
     }
 
@@ -302,6 +331,8 @@ export default function LeadsPage() {
         id: `temp-${index}`,
         status: "new" as const,
         createdAt: new Date(),
+        updatedAt: new Date(), // Add this field
+        followUpDate: null,
         Notes: [],
       }));
 
@@ -399,13 +430,23 @@ export default function LeadsPage() {
         // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
-            lead.id === id ? { ...lead, status: data.lead.status } : lead
+            lead.id === id
+              ? {
+                  ...lead,
+                  status: data.lead.status,
+                  updatedAt: new Date(data.lead.updatedAt),
+                }
+              : lead
           )
         );
 
         // Update in selected lead if it's the one being edited
         if (selectedLead && selectedLead.id === id) {
-          setSelectedLead({ ...selectedLead, status: data.lead.status });
+          setSelectedLead({
+            ...selectedLead,
+            status: data.lead.status,
+            updatedAt: new Date(data.lead.updatedAt),
+          });
         }
 
         alert("Status updated successfully!");
@@ -415,6 +456,55 @@ export default function LeadsPage() {
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Error updating status. Please try again.");
+    }
+  };
+
+  // Update lead follow-up date
+  const updateLeadFollowUpDate = async (
+    id: string,
+    followUpDate: Date | null
+  ) => {
+    try {
+      const response = await fetch(`/api/agencies/${agencyId}/lead/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followUpDate }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Update in all leads
+        setAllLeads((prev) =>
+          prev.map((lead) =>
+            lead.id === id
+              ? {
+                  ...lead,
+                  followUpDate: data.lead.followUpDate,
+                  updatedAt: new Date(data.lead.updatedAt),
+                }
+              : lead
+          )
+        );
+
+        // Update in selected lead if it's the one being edited
+        if (selectedLead && selectedLead.id === id) {
+          setSelectedLead({
+            ...selectedLead,
+            followUpDate: data.lead.followUpDate,
+            updatedAt: new Date(data.lead.updatedAt),
+          });
+        }
+
+        alert("Follow-up date updated successfully!");
+      } else {
+        throw new Error("Failed to update follow-up date");
+      }
+    } catch (error) {
+      console.error("Error updating follow-up date:", error);
+      alert("Error updating follow-up date. Please try again.");
     }
   };
 
@@ -445,7 +535,20 @@ export default function LeadsPage() {
         setSelectedLead({
           ...selectedLead,
           Notes: [data.note, ...selectedLead.Notes],
+          updatedAt: new Date(), // Update the updatedAt field
         });
+
+        // Update in all leads
+        setAllLeads((prev) =>
+          prev.map((lead) =>
+            lead.id === selectedLead.id
+              ? {
+                  ...lead,
+                  updatedAt: new Date(),
+                }
+              : lead
+          )
+        );
 
         // Clear the form
         setNewNote({ message: "", behavior: "" });
@@ -500,7 +603,20 @@ export default function LeadsPage() {
           Notes: selectedLead.Notes.map((note) =>
             note.id === editingNote.id ? data.note : note
           ),
+          updatedAt: new Date(), // Update the updatedAt field
         });
+
+        // Update in all leads
+        setAllLeads((prev) =>
+          prev.map((lead) =>
+            lead.id === selectedLead.id
+              ? {
+                  ...lead,
+                  updatedAt: new Date(),
+                }
+              : lead
+          )
+        );
 
         alert("Note updated successfully!");
         setIsEditDialogOpen(false);
@@ -532,7 +648,20 @@ export default function LeadsPage() {
         setSelectedLead({
           ...selectedLead,
           Notes: selectedLead.Notes.filter((note) => note.id !== noteId),
+          updatedAt: new Date(), // Update the updatedAt field
         });
+
+        // Update in all leads
+        setAllLeads((prev) =>
+          prev.map((lead) =>
+            lead.id === selectedLead.id
+              ? {
+                  ...lead,
+                  updatedAt: new Date(),
+                }
+              : lead
+          )
+        );
 
         alert("Note deleted successfully!");
       } else {
@@ -575,6 +704,7 @@ export default function LeadsPage() {
         from: null,
         to: null,
       },
+      followUp: "all",
     });
   };
 
@@ -584,7 +714,8 @@ export default function LeadsPage() {
       filters.status !== "all" ||
       filters.search !== "" ||
       filters.dateRange.from !== null ||
-      filters.dateRange.to !== null
+      filters.dateRange.to !== null ||
+      filters.followUp !== "all"
     );
   };
 
@@ -613,7 +744,9 @@ export default function LeadsPage() {
               email: newLead.email,
               phone: newLead.phone,
               status: newLead.status,
+              followUpDate: newLead.followUpDate,
               createdAt: new Date(),
+              updatedAt: new Date(), // Add this field
             },
           ],
           userId,
@@ -629,6 +762,7 @@ export default function LeadsPage() {
           email: "",
           phone: "",
           status: "new",
+          followUpDate: null,
         });
         // Refresh the leads list
         fetchAllLeads();
@@ -676,6 +810,21 @@ export default function LeadsPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  // Get follow-up badge variant based on date
+  const getFollowUpBadgeVariant = (followUpDate: Date | null) => {
+    if (!followUpDate) return "outline";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const followUp = new Date(followUpDate);
+    followUp.setHours(0, 0, 0, 0);
+
+    if (isToday(followUp)) return "default";
+    if (followUp < today) return "destructive";
+    return "secondary";
   };
 
   // Reset selected lead when drawer closes
@@ -874,7 +1023,7 @@ export default function LeadsPage() {
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       {/* Status Filter */}
                       <div className="space-y-2">
                         <Label htmlFor="status-filter">Status</Label>
@@ -912,6 +1061,27 @@ export default function LeadsPage() {
                             handleFilterChange("search", e.target.value)
                           }
                         />
+                      </div>
+
+                      {/* Follow-up Filter */}
+                      <div className="space-y-2">
+                        <Label htmlFor="follow-up-filter">Follow-up</Label>
+                        <Select
+                          value={filters.followUp}
+                          onValueChange={(value) =>
+                            handleFilterChange("followUp", value)
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Filter by follow-up" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="upcoming">Upcoming</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="overdue">Overdue</SelectItem>
+                            <SelectItem value="none">No Follow-up</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       {/* Date Range Filter */}
@@ -1006,7 +1176,8 @@ export default function LeadsPage() {
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Created</TableHead>
+                        <TableHead>Follow-up</TableHead>
+                        <TableHead>Last Updated</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1024,7 +1195,20 @@ export default function LeadsPage() {
                           <TableCell>
                             {renderStatusBadge(lead.status)}
                           </TableCell>
-                          <TableCell>{formatDate(lead.createdAt)}</TableCell>
+                          <TableCell>
+                            {lead.followUpDate ? (
+                              <Badge
+                                variant={getFollowUpBadgeVariant(
+                                  lead.followUpDate
+                                )}>
+                                <Bell className="h-3 w-3 mr-1" />
+                                {formatDate(lead.followUpDate)}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">No follow-up</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{formatDate(lead.updatedAt)}</TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
                               <Button
@@ -1152,8 +1336,55 @@ export default function LeadsPage() {
                       </Select>
                     </div>
                     <div>
+                      <h3 className="font-semibold mb-2">Follow-up Date</h3>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !selectedLead.followUpDate &&
+                                "text-muted-foreground"
+                            )}>
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {selectedLead.followUpDate ? (
+                              format(selectedLead.followUpDate, "PPP")
+                            ) : (
+                              <span>Set follow-up date</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent
+                            mode="single"
+                            selected={selectedLead.followUpDate || undefined}
+                            onSelect={(date) =>
+                              updateLeadFollowUpDate(selectedLead.id, date)
+                            }
+                            initialFocus
+                          />
+                          {selectedLead.followUpDate && (
+                            <div className="p-3 border-t border-border">
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() =>
+                                  updateLeadFollowUpDate(selectedLead.id, null)
+                                }>
+                                Clear follow-up date
+                              </Button>
+                            </div>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
                       <h3 className="font-semibold mb-2">Created</h3>
                       <p>{formatDate(selectedLead.createdAt)}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Last Updated</h3>
+                      <p>{formatDate(selectedLead.updatedAt)}</p>
                     </div>
                   </div>
 
@@ -1313,7 +1544,7 @@ export default function LeadsPage() {
 
         {/* Add Lead Dialog */}
         <Dialog open={isAddLeadModalOpen} onOpenChange={setIsAddLeadModalOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Lead</DialogTitle>
               <DialogDescription>
@@ -1373,6 +1604,50 @@ export default function LeadsPage() {
                     <SelectItem value="unqualified">Unqualified</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="follow-up-date">
+                  Follow-up Date (Optional)
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !newLead.followUpDate && "text-muted-foreground"
+                      )}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {newLead.followUpDate ? (
+                        format(newLead.followUpDate, "PPP")
+                      ) : (
+                        <span>Set follow-up date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={newLead.followUpDate || undefined}
+                      onSelect={(date) =>
+                        setNewLead({ ...newLead, followUpDate: date })
+                      }
+                      initialFocus
+                    />
+                    {newLead.followUpDate && (
+                      <div className="p-3 border-t border-border">
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() =>
+                            setNewLead({ ...newLead, followUpDate: null })
+                          }>
+                          Clear follow-up date
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <DialogFooter>

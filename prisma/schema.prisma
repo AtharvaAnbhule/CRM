@@ -127,17 +127,18 @@ model Agency {
 }
 
 model Leads {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String
-  status    String   @default("new") // new, contacted, interested, qualified, unqualified
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  agency    Agency   @relation(fields: [agencyId], references: [id])
-  agencyId  String
-  Notes     nottt[] // Add this relation field
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  phone        String
+  status       String   @default("new") // new, contacted, interested, qualified, unqualified
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  followUpDate DateTime @default(now())
+  agency       Agency   @relation(fields: [agencyId], references: [id])
+  agencyId     String
+  Notes        nottt[] // Add this relation field
 
   @@unique([email, agencyId])
   @@map("leads")

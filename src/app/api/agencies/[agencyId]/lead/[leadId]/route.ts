@@ -46,7 +46,7 @@ export async function PATCH(
         }
 
         const body = await req.json();
-        const { status, name, email, phone, notes } = body;
+        const { status, name, email, phone, notes, followUpDate } = body;
 
         // Check if lead exists
         const existingLead = await db.leads.findUnique({
@@ -65,6 +65,7 @@ export async function PATCH(
         if (status) updateData.status = status;
         if (name) updateData.name = name;
         if (email) updateData.email = email;
+        if (followUpDate) updateData.followUpDate = followUpDate;
         if (phone) updateData.phone = phone;
         if (notes !== undefined) updateData.notes = notes;
 
