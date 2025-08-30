@@ -188,8 +188,42 @@ model SubAccount {
   pipelines      Pipeline[]
   tags           Tag[]
   notifications  Notification[]
+  leads          LeadSub[]
 
   @@index([agencyId])
+}
+
+model LeadSub {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  phone        String
+  status       String   @default("new")
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  followUpDate DateTime @default(now())
+
+  subAccountId String
+  subAccount   SubAccount @relation(fields: [subAccountId], references: [id])
+
+  Notes notttt[]
+
+  @@unique([email, subAccountId])
+  @@map("leadSub")
+}
+
+model notttt {
+  id        String   @id @default(cuid())
+  message   String
+  behavior  String?
+  createdAt DateTime @default(now())
+  leadId    String
+
+  // Correct the relation to use "Leads" instead of "Lead"
+  lead LeadSub @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("note")
 }
 
 model Permissions {

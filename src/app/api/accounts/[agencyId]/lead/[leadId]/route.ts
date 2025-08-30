@@ -13,10 +13,10 @@ export async function GET(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const lead = await db.leads.findUnique({
+        const lead = await db.leadSub.findUnique({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             }
         });
 
@@ -49,10 +49,10 @@ export async function PATCH(
         const { status, name, email, phone, notes, followUpDate } = body;
 
         // Check if lead exists
-        const existingLead = await db.leads.findUnique({
+        const existingLead = await db.leadSub.findUnique({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
         });
 
@@ -69,10 +69,10 @@ export async function PATCH(
         if (phone) updateData.phone = phone;
         if (notes !== undefined) updateData.notes = notes;
 
-        const lead = await db.leads.update({
+        const lead = await db.leadSub.update({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
             data: updateData,
         });
@@ -98,10 +98,10 @@ export async function DELETE(
         }
 
         // Check if lead exists
-        const existingLead = await db.leads.findUnique({
+        const existingLead = await db.leadSub.findUnique({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
         });
 
@@ -110,10 +110,10 @@ export async function DELETE(
         }
 
         // Delete the lead (this will cascade delete notes due to the relation)
-        await db.leads.delete({
+        await db.leadSub.delete({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
         });
 

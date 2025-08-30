@@ -2,60 +2,67 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
-
 export async function POST(
     request: NextRequest,
     { params }: { params: { agencyId: string } }
 ) {
     try {
-        const agencyId = params.agencyId;
-        console.log('Creating leads for agency:', agencyId);
+        const subAccountId = params.agencyId; // this is actually a SubAccount ID
+        console.log('Creating leads for subaccount:', subAccountId);
 
-        // Check if agency exists
-        const agency = await db.agency.findUnique({
-            where: { id: agencyId }
+        // Check if subaccount exists
+        const subAccount = await db.subAccount.findUnique({
+            where: { id: subAccountId },
         });
 
-        if (!agency) {
-            return NextResponse.json({ error: 'Agency not found' }, { status: 404 });
+        if (!subAccount) {
+            return NextResponse.json(
+                { error: 'SubAccount not found' },
+                { status: 404 }
+            );
         }
 
         const body = await request.json();
         const { leads: leadsData } = body;
 
         if (!leadsData || !Array.isArray(leadsData)) {
-            return NextResponse.json({ error: 'Leads array is required' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Leads array is required' },
+                { status: 400 }
+            );
         }
 
-        // Validate leads
-        const validLeads = leadsData.filter(lead => lead.name && lead.email);
+        // Validate leads (must have name + email)
+        const validLeads = leadsData.filter((lead) => lead.name && lead.email);
 
         if (validLeads.length === 0) {
-            return NextResponse.json({ error: 'No valid leads provided' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'No valid leads provided' },
+                { status: 400 }
+            );
         }
 
-        // Add agencyId to each lead and ensure proper formatting
-        const leadsWithAgency = validLeads.map(lead => ({
+        // Map leads to include subAccountId
+        const leadsWithSubAccount = validLeads.map((lead) => ({
             name: lead.name,
             email: lead.email,
             phone: lead.phone || '',
             status: lead.status || 'new',
             notes: lead.notes || '',
-            agencyId,
+            subAccountId,
         }));
 
-        // Use transaction to create leads
+        // Upsert each lead
         const createdLeads = await db.$transaction(
-            leadsWithAgency.map(lead =>
-                db.leads.upsert({
+            leadsWithSubAccount.map((lead) =>
+                db.leadSub.upsert({
                     where: {
-                        email_agencyId: {
+                        email_subAccountId: {
                             email: lead.email,
-                            agencyId: lead.agencyId,
+                            subAccountId: lead.subAccountId,
                         },
                     },
                     update: {
-                        // Update existing lead with new data
                         name: lead.name,
                         phone: lead.phone,
                         status: lead.status,
@@ -68,9 +75,8 @@ export async function POST(
 
         return NextResponse.json({
             message: `Successfully processed ${createdLeads.length} leads`,
-            leads: createdLeads
+            leads: createdLeads,
         });
-
     } catch (error) {
         console.error('Error creating leads:', error);
         return NextResponse.json(

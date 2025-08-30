@@ -18,12 +18,12 @@ export async function PATCH(
         const { message, behavior } = body;
 
         // Verify the note exists and belongs to the lead and agency
-        const note = await db.nottt.findFirst({
+        const note = await db.notttt.findFirst({
             where: {
                 id: params.noteId,
                 leadId: params.leadId,
                 lead: {
-                    agencyId: params.agencyId,
+                    subAccountId: params.agencyId,
                 },
             },
         });

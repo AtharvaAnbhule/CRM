@@ -31,9 +31,9 @@ export async function GET(
         }
 
         // Fetch all leads for this agency
-        const leads = await db.leads.findMany({
+        const leads = await db.leadSub.findMany({
             where: {
-                agencyId: agencyId
+                subAccountId: agencyId
             },
             orderBy: {
                 createdAt: 'desc'

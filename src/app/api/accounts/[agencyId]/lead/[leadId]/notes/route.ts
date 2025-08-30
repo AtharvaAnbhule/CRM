@@ -15,10 +15,10 @@ export async function GET(
         }
 
         // Verify the lead exists and belongs to the agency
-        const lead = await db.leads.findUnique({
+        const lead = await db.leadSub.findUnique({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
         });
 
@@ -27,7 +27,7 @@ export async function GET(
         }
 
         // Get all notes for this lead
-        const notes = await db.nottt.findMany({
+        const notes = await db.notttt.findMany({
             where: {
                 leadId: params.leadId,
             },
@@ -68,10 +68,10 @@ export async function POST(
         }
 
         // Verify the lead exists and belongs to the agency
-        const lead = await db.leads.findUnique({
+        const lead = await db.leadSub.findUnique({
             where: {
                 id: params.leadId,
-                agencyId: params.agencyId,
+                subAccountId: params.agencyId,
             },
         });
 
@@ -80,7 +80,7 @@ export async function POST(
         }
 
         // Create the note with the leadId from the URL params
-        const note = await db.nottt.create({
+        const note = await db.notttt.create({
             data: {
                 message,
                 behavior: behavior || null,

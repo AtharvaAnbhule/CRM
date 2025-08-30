@@ -225,6 +225,9 @@ const LeadTable: React.FC = () => {
           </Button>
 
           <Button onClick={getleads}>Automated leads</Button>
+          <Button onClick={() => router.push("leads/upload")}>
+            Private leads
+          </Button>
         </div>
       </div>
 
