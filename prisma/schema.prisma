@@ -138,7 +138,7 @@ model Leads {
   followUpDate DateTime @default(now())
   agency       Agency   @relation(fields: [agencyId], references: [id])
   agencyId     String
-  Notes        nottt[] // Add this relation field
+  Notes        nottt[] // Add this relation field 
 
   @@unique([email, agencyId])
   @@map("leads")

@@ -24,6 +24,7 @@ import {
   Menu,
   MessageSquareQuote,
   MessageSquareTextIcon,
+  PanelsTopLeftIcon,
   PlaneIcon,
   PlaneTakeoffIcon,
   PlusCircle,
@@ -508,6 +509,30 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
                   className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
                   <FolderClock />
                   <span> AI FollowUp</span>
+                </Button>
+              </>
+            )}
+
+            {!window.location.pathname.includes("company") && (
+              <>
+                <Button
+                  onClick={() => {
+                    const pathname = window.location.pathname;
+                    const pathSegments = pathname.split("/");
+                    const agencyIndex = pathSegments.indexOf("account");
+
+                    if (
+                      agencyIndex !== -1 &&
+                      pathSegments.length > agencyIndex + 1
+                    ) {
+                      const agencyId = pathSegments[agencyIndex + 1];
+                      router.push(`/account/${agencyId}/leads`);
+                    }
+                  }}
+                  variant="ghost"
+                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                  <PanelsTopLeftIcon />
+                  <span>Leads</span>
                 </Button>
               </>
             )}
