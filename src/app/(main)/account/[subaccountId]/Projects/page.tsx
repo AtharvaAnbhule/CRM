@@ -6,25 +6,68 @@ import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 // UI Components
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import FileUpload from "@/components/common/FileUpload";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 // Charts
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 
 // Icons
-import { Check, ExternalLink, Github, Plus, UserPlus, X, Edit, Trash2, Bug, Calendar as CalendarIcon } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  Github,
+  Plus,
+  UserPlus,
+  X,
+  Edit,
+  Trash2,
+  Bug,
+  Calendar as CalendarIcon,
+} from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 // Types
@@ -59,7 +102,7 @@ interface Project {
   progress?: number;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function Projects() {
   const pathname = usePathname();
@@ -72,29 +115,29 @@ export default function Projects() {
     projects: false,
     bugs: false,
     employees: false,
-    actions: false
+    actions: false,
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  
+
   // Modal states
   const [openBugModal, setOpenBugModal] = useState(false);
   const [openProjectModal, setOpenProjectModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  
+
   // Form states
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  
+
   // Form data
   const [newBug, setNewBug] = useState({
     title: "",
-    description: ""
+    description: "",
   });
-  
+
   const [projectForm, setProjectForm] = useState({
     title: "",
     description: "",
@@ -112,7 +155,7 @@ export default function Projects() {
 
   // Fetch data functions
   const fetchBugs = useCallback(async () => {
-    setLoading(prev => ({ ...prev, bugs: true }));
+    setLoading((prev) => ({ ...prev, bugs: true }));
     try {
       const res = await fetch(`/api/bugs?projectId=${subaccountId}`);
       const data = await res.json();
@@ -121,12 +164,12 @@ export default function Projects() {
       console.error(error);
       toast.error("Failed to fetch bugs");
     } finally {
-      setLoading(prev => ({ ...prev, bugs: false }));
+      setLoading((prev) => ({ ...prev, bugs: false }));
     }
   }, [subaccountId]);
 
   const fetchEmployees = useCallback(async () => {
-    setLoading(prev => ({ ...prev, employees: true }));
+    setLoading((prev) => ({ ...prev, employees: true }));
     try {
       const res = await fetch(`/api/employees?subaccountId=${subaccountId}`);
       if (!res.ok) throw new Error("Failed to fetch employees");
@@ -136,12 +179,12 @@ export default function Projects() {
       console.error("Error fetching employees:", err);
       toast.error("Failed to fetch employees");
     } finally {
-      setLoading(prev => ({ ...prev, employees: false }));
+      setLoading((prev) => ({ ...prev, employees: false }));
     }
   }, [subaccountId]);
 
   const fetchProjects = useCallback(async () => {
-    setLoading(prev => ({ ...prev, projects: true }));
+    setLoading((prev) => ({ ...prev, projects: true }));
     try {
       const res = await fetch(`/api/projects?subAccountId=${subaccountId}`);
       if (!res.ok) throw new Error("Failed to fetch projects");
@@ -149,14 +192,17 @@ export default function Projects() {
       // Calculate progress for each project
       const projectsWithProgress = data.map((project: Project) => ({
         ...project,
-        progress: project.tasks > 0 ? Math.round((project.activeTasks / project.tasks) * 100) : 0
+        progress:
+          project.tasks > 0
+            ? Math.round((project.activeTasks / project.tasks) * 100)
+            : 0,
       }));
       setProjects(projectsWithProgress);
     } catch (error) {
       console.error("Error fetching projects:", error);
       toast.error("Failed to fetch projects");
     } finally {
-      setLoading(prev => ({ ...prev, projects: false }));
+      setLoading((prev) => ({ ...prev, projects: false }));
     }
   }, [subaccountId]);
 
@@ -176,21 +222,21 @@ export default function Projects() {
       return;
     }
 
-    setLoading(prev => ({ ...prev, actions: true }));
+    setLoading((prev) => ({ ...prev, actions: true }));
     try {
       const res = await fetch(`/api/bugs`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
           title: newBug.title,
           description: newBug.description,
           projectId: subaccountId,
         }),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
-      if (!res.ok) throw new Error('Failed to add bug');
+      if (!res.ok) throw new Error("Failed to add bug");
 
       toast.success("Bug added successfully");
       setNewBug({ title: "", description: "" });
@@ -200,18 +246,18 @@ export default function Projects() {
       console.error(error);
       toast.error("Failed to add bug");
     } finally {
-      setLoading(prev => ({ ...prev, actions: false }));
+      setLoading((prev) => ({ ...prev, actions: false }));
     }
   };
 
   const resolveBug = async (bugId: string) => {
-    setLoading(prev => ({ ...prev, actions: true }));
+    setLoading((prev) => ({ ...prev, actions: true }));
     try {
       const res = await fetch(`/api/bugs/${bugId}`, {
-        method: 'PATCH',
+        method: "PATCH",
       });
 
-      if (!res.ok) throw new Error('Failed to resolve bug');
+      if (!res.ok) throw new Error("Failed to resolve bug");
 
       toast.success("Bug resolved successfully");
       fetchBugs();
@@ -219,47 +265,60 @@ export default function Projects() {
       console.error(error);
       toast.error("Failed to resolve bug");
     } finally {
-      setLoading(prev => ({ ...prev, actions: false }));
+      setLoading((prev) => ({ ...prev, actions: false }));
     }
   };
 
   // Project handlers
   const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(prev => ({ ...prev, actions: true }));
-    
+    setLoading((prev) => ({ ...prev, actions: true }));
+
     const method = editingProject ? "PUT" : "POST";
-    const url = editingProject ? `/api/projects/${editingProject.id}` : "/api/projects";
-                    
+    const url = editingProject
+      ? `/api/projects/${editingProject.id}`
+      : "/api/projects";
+
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectForm),
-      }); 
+      });
 
-      
-      
-      if (!res.ok) throw new Error(editingProject ? "Failed to update project" : "Failed to create project");
+      if (!res.ok)
+        throw new Error(
+          editingProject
+            ? "Failed to update project"
+            : "Failed to create project"
+        );
 
-      toast.success(editingProject ? "Project updated successfully" : "Project created successfully");
+      toast.success(
+        editingProject
+          ? "Project updated successfully"
+          : "Project created successfully"
+      );
       setOpenProjectModal(false);
       setEditingProject(null);
       fetchProjects();
     } catch (error) {
       console.error("Error saving project:", error);
-      toast.error(editingProject ? "Failed to update project" : "Failed to create project");
+      toast.error(
+        editingProject ? "Failed to update project" : "Failed to create project"
+      );
     } finally {
-      setLoading(prev => ({ ...prev, actions: false }));
+      setLoading((prev) => ({ ...prev, actions: false }));
     }
   };
 
   const handleDeleteProject = async () => {
     if (!deleteProjectId) return;
-    setLoading(prev => ({ ...prev, actions: true }));
-    
+    setLoading((prev) => ({ ...prev, actions: true }));
+
     try {
-      const res = await fetch(`/api/projects/${deleteProjectId}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects/${deleteProjectId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete project");
 
       toast.success("Project deleted successfully");
@@ -269,37 +328,39 @@ export default function Projects() {
       console.error("Error deleting project:", error);
       toast.error("Failed to delete project");
     } finally {
-      setLoading(prev => ({ ...prev, actions: false }));
+      setLoading((prev) => ({ ...prev, actions: false }));
     }
   };
 
   const onAssignEmployee = async () => {
     if (!selectedEmployee || !selectedProject) return;
-    
+
     // Check if employee is already assigned
-    if (selectedProject.assignees.some(emp => emp.id === selectedEmployee)) {
+    if (selectedProject.assignees.some((emp) => emp.id === selectedEmployee)) {
       toast.warning("Employee is already assigned to this project");
       return;
     }
 
-    setLoading(prev => ({ ...prev, actions: true }));
+    setLoading((prev) => ({ ...prev, actions: true }));
     try {
-      const res = await fetch('/api/assign-employee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          projectId: selectedProject.id, 
-          employeeId: selectedEmployee 
+      const res = await fetch("/api/assign-employee", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: selectedProject.id,
+          employeeId: selectedEmployee,
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to assign employee');
+      if (!res.ok) throw new Error("Failed to assign employee");
 
       toast.success("Employee assigned successfully");
       setSelectedEmployee("");
-      
+
       // Refresh project details
-      const updatedProjectRes = await fetch(`/api/assign-employee/${selectedProject.id}`);
+      const updatedProjectRes = await fetch(
+        `/api/assign-employee/${selectedProject.id}`
+      );
       if (updatedProjectRes.ok) {
         const updatedProject = await updatedProjectRes.json();
         setSelectedProject(updatedProject);
@@ -308,7 +369,7 @@ export default function Projects() {
       console.error(error);
       toast.error("Failed to assign employee");
     } finally {
-      setLoading(prev => ({ ...prev, actions: false }));
+      setLoading((prev) => ({ ...prev, actions: false }));
     }
   };
 
@@ -340,47 +401,66 @@ export default function Projects() {
   const openDeleteProjectModal = (id: string) => {
     setDeleteProjectId(id);
     setDeleteModalOpen(true);
-  }; 
+  };
   useEffect(() => {
-     //@ts-ignore
+    //@ts-ignore
     if (selectedProject?.id) {
-       //@ts-ignore
+      //@ts-ignore
       fetch(`/api/assign-employee/${selectedProject.id}`)
-        .then(response => response.json())
-        .then(data => {
-          setSelectedProject(prev => ({
-             //@ts-ignore
+        .then((response) => response.json())
+        .then((data) => {
+          setSelectedProject((prev) => ({
+            //@ts-ignore
             ...prev,
-            assignees: data
+            assignees: data,
           }));
         });
     }
-     //@ts-ignore
+    //@ts-ignore
   }, [selectedProject?.id]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-yellow-500";
+      case "low":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
   // Chart data
   const projectStatusData = [
-    { name: 'Completed', value: projects.filter(p => p.progress === 100).length },
-    { name: 'In Progress', value: projects.filter(p => p.progress > 0 && p.progress < 100).length },
-    { name: 'Not Started', value: projects.filter(p => p.progress === 0).length },
+    {
+      name: "Completed",
+      value: projects.filter((p) => p.progress === 100).length,
+    },
+    {
+      name: "In Progress",
+      value: projects.filter((p) => p.progress > 0 && p.progress < 100).length,
+    },
+    {
+      name: "Not Started",
+      value: projects.filter((p) => p.progress === 0).length,
+    },
   ];
 
   const priorityDistributionData = [
-    { name: 'High', value: projects.filter(p => p.priority === 'high').length },
-    { name: 'Medium', value: projects.filter(p => p.priority === 'medium').length },
-    { name: 'Low', value: projects.filter(p => p.priority === 'low').length },
+    {
+      name: "High",
+      value: projects.filter((p) => p.priority === "high").length,
+    },
+    {
+      name: "Medium",
+      value: projects.filter((p) => p.priority === "medium").length,
+    },
+    { name: "Low", value: projects.filter((p) => p.priority === "low").length },
   ];
 
-  const taskCompletionData = projects.map(project => ({
+  const taskCompletionData = projects.map((project) => ({
     name: project.title,
     completed: project.tasks - project.activeTasks,
     remaining: project.activeTasks,
@@ -407,17 +487,18 @@ export default function Projects() {
                   data={projectStatusData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
                   {projectStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -434,8 +515,7 @@ export default function Projects() {
                   right: 30,
                   left: 20,
                   bottom: 5,
-                }}
-              >
+                }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -460,13 +540,16 @@ export default function Projects() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Active Tasks</p>
               <h3 className="text-2xl font-bold">
-                {projects.reduce((sum, project) => sum + project.activeTasks, 0)}
+                {projects.reduce(
+                  (sum, project) => sum + project.activeTasks,
+                  0
+                )}
               </h3>
             </div>
             <div className="p-3 rounded-full bg-green-500/10">
@@ -474,7 +557,7 @@ export default function Projects() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
@@ -488,13 +571,13 @@ export default function Projects() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Open Bugs</p>
               <h3 className="text-2xl font-bold">
-                {bugs.filter(bug => !bug.isResolved).length}
+                {bugs.filter((bug) => !bug.isResolved).length}
               </h3>
             </div>
             <div className="p-3 rounded-full bg-red-500/10">
@@ -509,8 +592,8 @@ export default function Projects() {
         <div className="flex gap-2">
           <Dialog open={openProjectModal} onOpenChange={setOpenProjectModal}>
             <DialogTrigger asChild>
-              <Button 
-                className="gap-2" 
+              <Button
+                className="gap-2"
                 onClick={() => {
                   setEditingProject(null);
                   setProjectForm({
@@ -527,8 +610,7 @@ export default function Projects() {
                     projectId: subaccountId,
                     assignees: [],
                   });
-                }}
-              >
+                }}>
                 <Plus size={18} /> New Project
               </Button>
             </DialogTrigger>
@@ -538,7 +620,9 @@ export default function Projects() {
                   {editingProject ? "Edit Project" : "Create New Project"}
                 </DialogTitle>
                 <DialogDescription>
-                  {editingProject ? "Update your project details" : "Fill in the details to create a new project"}
+                  {editingProject
+                    ? "Update your project details"
+                    : "Fill in the details to create a new project"}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleProjectSubmit} className="grid gap-4 py-4">
@@ -550,8 +634,11 @@ export default function Projects() {
                       <Label>Project Image</Label>
                       <FileUpload
                         value={projectForm.image}
-                        onChange={(uploadedUrl) => 
-                          setProjectForm({ ...projectForm, image: uploadedUrl || "" })
+                        onChange={(uploadedUrl) =>
+                          setProjectForm({
+                            ...projectForm,
+                            image: uploadedUrl || "",
+                          })
                         }
                         endpoint="media"
                       />
@@ -564,8 +651,11 @@ export default function Projects() {
                         id="title"
                         placeholder="Project title"
                         value={projectForm.title}
-                        onChange={(e) => 
-                          setProjectForm({ ...projectForm, title: e.target.value })
+                        onChange={(e) =>
+                          setProjectForm({
+                            ...projectForm,
+                            title: e.target.value,
+                          })
                         }
                         required
                       />
@@ -578,8 +668,11 @@ export default function Projects() {
                         id="description"
                         placeholder="Project description"
                         value={projectForm.description}
-                        onChange={(e) => 
-                          setProjectForm({ ...projectForm, description: e.target.value })
+                        onChange={(e) =>
+                          setProjectForm({
+                            ...projectForm,
+                            description: e.target.value,
+                          })
                         }
                         required
                       />
@@ -596,8 +689,11 @@ export default function Projects() {
                           id="githubUrl"
                           placeholder="https://github.com/..."
                           value={projectForm.githubUrl}
-                          onChange={(e) => 
-                            setProjectForm({ ...projectForm, githubUrl: e.target.value })
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              githubUrl: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -607,8 +703,11 @@ export default function Projects() {
                           id="liveLink"
                           placeholder="https://example.com"
                           value={projectForm.liveLink}
-                          onChange={(e) => 
-                            setProjectForm({ ...projectForm, liveLink: e.target.value })
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              liveLink: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -620,10 +719,9 @@ export default function Projects() {
                         <Label htmlFor="priority">Priority *</Label>
                         <Select
                           value={projectForm.priority}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             setProjectForm({ ...projectForm, priority: value })
-                          }
-                        >
+                          }>
                           <SelectTrigger>
                             <SelectValue placeholder="Select priority" />
                           </SelectTrigger>
@@ -640,8 +738,11 @@ export default function Projects() {
                           id="startDate"
                           type="date"
                           value={projectForm.startDate}
-                          onChange={(e) => 
-                            setProjectForm({ ...projectForm, startDate: e.target.value })
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              startDate: e.target.value,
+                            })
                           }
                           required
                         />
@@ -657,8 +758,11 @@ export default function Projects() {
                           type="number"
                           min="0"
                           value={projectForm.tasks}
-                          onChange={(e) => 
-                            setProjectForm({ ...projectForm, tasks: Number(e.target.value) })
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              tasks: Number(e.target.value),
+                            })
                           }
                           required
                         />
@@ -671,8 +775,11 @@ export default function Projects() {
                           min="0"
                           max={projectForm.tasks}
                           value={projectForm.activeTasks}
-                          onChange={(e) => 
-                            setProjectForm({ ...projectForm, activeTasks: Number(e.target.value) })
+                          onChange={(e) =>
+                            setProjectForm({
+                              ...projectForm,
+                              activeTasks: Number(e.target.value),
+                            })
                           }
                           required
                         />
@@ -681,15 +788,18 @@ export default function Projects() {
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setOpenProjectModal(false)}
-                  >
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpenProjectModal(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={loading.actions}>
-                    {loading.actions ? "Processing..." : editingProject ? "Update Project" : "Create Project"}
+                    {loading.actions
+                      ? "Processing..."
+                      : editingProject
+                        ? "Update Project"
+                        : "Create Project"}
                   </Button>
                 </div>
               </form>
@@ -721,11 +831,12 @@ export default function Projects() {
       ) : projects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardHeader 
-                className="p-0 cursor-pointer" 
-                onClick={() => openProjectDetails(project)}
-              >
+            <Card
+              key={project.id}
+              className="hover:shadow-md transition-shadow">
+              <CardHeader
+                className="p-0 cursor-pointer"
+                onClick={() => openProjectDetails(project)}>
                 {project.image ? (
                   <div className="relative h-48 w-full">
                     <Image
@@ -743,7 +854,9 @@ export default function Projects() {
               </CardHeader>
               <CardContent className="pt-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg line-clamp-1">{project.title}</h3>
+                  <h3 className="font-semibold text-lg line-clamp-1">
+                    {project.title}
+                  </h3>
                   <Badge className={getPriorityColor(project.priority)}>
                     {project.priority}
                   </Badge>
@@ -751,7 +864,7 @@ export default function Projects() {
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                   {project.description}
                 </p>
-                
+
                 <div className="mb-2">
                   <div className="flex justify-between text-sm mb-1">
                     <span>Progress</span>
@@ -759,25 +872,23 @@ export default function Projects() {
                   </div>
                   <Progress value={project.progress} className="h-2" />
                 </div>
-                
+
                 <div className="flex justify-between text-sm">
                   <span>Tasks: {project.tasks}</span>
                   <span>Active: {project.activeTasks}</span>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => openEditProjectModal(project)}
-                >
+                  onClick={() => openEditProjectModal(project)}>
                   <Edit className="h-4 w-4 mr-2" /> Edit
                 </Button>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   size="sm"
-                  onClick={() => openDeleteProjectModal(project.id)}
-                >
+                  onClick={() => openDeleteProjectModal(project.id)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
                 </Button>
               </CardFooter>
@@ -811,16 +922,17 @@ export default function Projects() {
               <SheetHeader>
                 <div className="flex justify-between items-start">
                   <div>
-                    <SheetTitle className="text-2xl">{selectedProject.title}</SheetTitle>
+                    <SheetTitle className="text-2xl">
+                      {selectedProject.title}
+                    </SheetTitle>
                     <p className="text-sm text-muted-foreground">
                       {selectedProject.description}
                     </p>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setDetailsOpen(false)}
-                  >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDetailsOpen(false)}>
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
@@ -842,7 +954,9 @@ export default function Projects() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">Priority</p>
-                  <p className="font-medium capitalize">{selectedProject.priority}</p>
+                  <p className="font-medium capitalize">
+                    {selectedProject.priority}
+                  </p>
                 </div>
                 <div className="border rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">Start Date</p>
@@ -886,8 +1000,7 @@ export default function Projects() {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2"
-                        >
+                          className="flex items-center gap-2">
                           <Github className="h-4 w-4" /> GitHub
                         </a>
                       </Button>
@@ -902,8 +1015,7 @@ export default function Projects() {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2"
-                        >
+                          className="flex items-center gap-2">
                           <ExternalLink className="h-4 w-4" /> Live Demo
                         </a>
                       </Button>
@@ -919,8 +1031,7 @@ export default function Projects() {
                   <div className="flex gap-2">
                     <Select
                       value={selectedEmployee}
-                      onValueChange={setSelectedEmployee}
-                    >
+                      onValueChange={setSelectedEmployee}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select employee" />
                       </SelectTrigger>
@@ -932,11 +1043,10 @@ export default function Projects() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={onAssignEmployee}
-                      disabled={!selectedEmployee || loading.actions}
-                    >
+                      disabled={!selectedEmployee || loading.actions}>
                       <UserPlus className="h-4 w-4 mr-2" /> Assign
                     </Button>
                   </div>
@@ -945,7 +1055,9 @@ export default function Projects() {
                 {selectedProject?.assignees?.length > 0 ? (
                   <div className="border rounded-lg divide-y">
                     {selectedProject.assignees.map((employee) => (
-                      <div key={employee.id} className="p-3 flex items-center gap-3">
+                      <div
+                        key={employee.id}
+                        className="p-3 flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={employee.image} />
                           <AvatarFallback>
@@ -1002,7 +1114,9 @@ export default function Projects() {
                           />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="bug-description" className="text-right">
+                          <Label
+                            htmlFor="bug-description"
+                            className="text-right">
                             Description *
                           </Label>
                           <Textarea
@@ -1010,7 +1124,10 @@ export default function Projects() {
                             placeholder="Detailed description of the bug"
                             value={newBug.description}
                             onChange={(e) =>
-                              setNewBug({ ...newBug, description: e.target.value })
+                              setNewBug({
+                                ...newBug,
+                                description: e.target.value,
+                              })
                             }
                             className="col-span-3"
                             required
@@ -1018,16 +1135,12 @@ export default function Projects() {
                         </div>
                       </div>
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setOpenBugModal(false)}
-                        >
+                        <Button
+                          variant="outline"
+                          onClick={() => setOpenBugModal(false)}>
                           Cancel
                         </Button>
-                        <Button 
-                          onClick={addBug}
-                          disabled={loading.actions}
-                        >
+                        <Button onClick={addBug} disabled={loading.actions}>
                           {loading.actions ? "Submitting..." : "Report Bug"}
                         </Button>
                       </div>
@@ -1051,12 +1164,11 @@ export default function Projects() {
                         <div className="flex justify-between items-start mb-1">
                           <h4 className="font-medium">{bug.title}</h4>
                           {!bug.isResolved && (
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => resolveBug(bug.id)}
-                              disabled={loading.actions}
-                            >
+                              disabled={loading.actions}>
                               <Check className="h-4 w-4 mr-2" /> Resolve
                             </Button>
                           )}
@@ -1068,7 +1180,10 @@ export default function Projects() {
                           <span>
                             {new Date(bug.createdAt).toLocaleDateString()}
                           </span>
-                          <span className={bug.isResolved ? "text-green-500" : "text-red-500"}>
+                          <span
+                            className={
+                              bug.isResolved ? "text-green-500" : "text-red-500"
+                            }>
                             {bug.isResolved ? "Resolved" : "Unresolved"}
                           </span>
                         </div>
@@ -1094,20 +1209,19 @@ export default function Projects() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Are you sure you want to delete this project? This action cannot be undone.
+              Are you sure you want to delete this project? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setDeleteModalOpen(false)}
-              >
+              <Button
+                variant="outline"
+                onClick={() => setDeleteModalOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleDeleteProject}
-                disabled={loading.actions}
-              >
+                disabled={loading.actions}>
                 {loading.actions ? "Deleting..." : "Delete Project"}
               </Button>
             </div>
