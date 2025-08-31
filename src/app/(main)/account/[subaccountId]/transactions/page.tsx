@@ -35,18 +35,14 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  LineChart,
-  Legend,
-  Line,
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts";
-import { Search, Filter, ArrowUpDown, Download, Upload } from "lucide-react";
+import { Search, ArrowUpDown, Download } from "lucide-react";
 import DatePicker from "react-datepicker";
-
+import "react-datepicker/dist/react-datepicker.css";
 
 type Transaction = {
   id: string;
@@ -55,12 +51,33 @@ type Transaction = {
   type: string;
   date: string;
   category?: string;
+  subaccountid: string;
 };
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-const CATEGORIES = ["Marketing", "Advertising", "Sales", "Software", "Subscriptions", "Salaries", "Utilities", "Rent", "Travel", "Meals & Entertainment", "Office Supplies", "Legal & Professional Services", "Insurance", "Taxes", "Training & Education", "Equipment", "Maintenance", "Shipping", "Inventory", "Miscellaneous"]
-
+const CATEGORIES = [
+  "Marketing",
+  "Advertising",
+  "Sales",
+  "Software",
+  "Subscriptions",
+  "Salaries",
+  "Utilities",
+  "Rent",
+  "Travel",
+  "Meals & Entertainment",
+  "Office Supplies",
+  "Legal & Professional Services",
+  "Insurance",
+  "Taxes",
+  "Training & Education",
+  "Equipment",
+  "Maintenance",
+  "Shipping",
+  "Inventory",
+  "Miscellaneous",
+];
 
 export default function TransactionsPage() {
   const pathname = usePathname();
@@ -80,84 +97,130 @@ export default function TransactionsPage() {
 
   // Filter and sort states
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
+    "all"
+  );
   const [filterCategory, setFilterCategory] = useState("all");
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: string;
+  } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   const fetchTransactions = async () => {
-    const res = await fetch("/api/transactions");
-    const data = await res.json();
-    setTransactions(data);
+    try {
+      const res = await fetch(`/api/transactions?subaccountId=${subaccountId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTransactions(data);
+      } else {
+        toast.error("Failed to fetch transactions");
+      }
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      toast.error("Failed to fetch transactions");
+    }
   };
 
   useEffect(() => {
-    fetchTransactions();
-  }, []);
+    if (subaccountId) {
+      fetchTransactions();
+    }
+  }, [subaccountId]);
 
   const handleCreate = async () => {
+    if (!title || !amount || !subaccountId) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     const payload = {
       title,
       amount: parseFloat(amount),
       type,
       subaccountid: subaccountId,
-      category,
+      category: category || "Other",
+      date: date?.toISOString() || new Date().toISOString(),
     };
 
-    const res = await fetch("/api/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (res.ok) {
-      toast.success("Transaction added!");
-      fetchTransactions();
-      resetForm();
-      setAddModalOpen(false);
-    } else {
+      if (res.ok) {
+        toast.success("Transaction added!");
+        fetchTransactions();
+        resetForm();
+        setAddModalOpen(false);
+      } else {
+        toast.error("Failed to add transaction");
+      }
+    } catch (error) {
+      console.error("Error creating transaction:", error);
       toast.error("Failed to add transaction");
     }
   };
 
   const handleUpdate = async () => {
+    if (!editId || !title || !amount) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     const payload = {
       title,
       amount: parseFloat(amount),
       type,
       subaccountid: subaccountId,
-      category,
+      category: category || "Other",
+      date: date?.toISOString() || new Date().toISOString(),
     };
 
-    const res = await fetch(`/api/transactions/${editId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(`/api/transactions/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (res.ok) {
-      toast.success("Transaction updated!");
-      fetchTransactions();
-      resetForm();
-      setEditModalOpen(false);
-    } else {
+      if (res.ok) {
+        toast.success("Transaction updated!");
+        fetchTransactions();
+        resetForm();
+        setEditModalOpen(false);
+      } else {
+        toast.error("Failed to update transaction");
+      }
+    } catch (error) {
+      console.error("Error updating transaction:", error);
       toast.error("Failed to update transaction");
     }
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      toast.success("Deleted successfully");
-      fetchTransactions();
-    } else {
+    try {
+      const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Deleted successfully");
+        fetchTransactions();
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
       toast.error("Failed to delete");
     }
   };
 
   const handleDownload = () => {
-    const blob = new Blob([JSON.stringify(transactions, null, 2)], {
+    const filtered = transactions.filter(
+      (t) => t.subaccountid === subaccountId
+    );
+    const blob = new Blob([JSON.stringify(filtered, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -166,63 +229,6 @@ export default function TransactionsPage() {
     a.download = "transactions.json";
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = async (event) => {
-      try {
-        const text = event.target?.result as string;
-        let parsed: Transaction[];
-
-        if (file.name.endsWith(".json")) {
-          parsed = JSON.parse(text);
-        } else if (file.name.endsWith(".csv")) {
-          const lines = text.trim().split("\n");
-          const headers = lines[0].split(",");
-          parsed = lines.slice(1).map((line) => {
-            const values = line.split(",");
-            const obj: any = {};
-            headers.forEach((header, idx) => {
-              obj[header.trim()] = values[idx].trim();
-            });
-            return obj as Transaction;
-          });
-        } else {
-          toast.error("Unsupported file format");
-          return;
-        }
-
-        for (const tx of parsed) {
-          const payload = {
-            title: tx.title,
-            amount: parseFloat(String(tx.amount)),
-            type: tx.type,
-            subaccountid: subaccountId,
-            category: tx.category || "Other",
-            date: tx.date || new Date().toISOString(),
-          };
-
-          await fetch("/api/transactions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-        }
-
-        toast.success("Transactions imported successfully!");
-        fetchTransactions();
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to import transactions");
-      }
-    };
-
-    reader.readAsText(file);
   };
 
   const resetForm = () => {
@@ -234,9 +240,9 @@ export default function TransactionsPage() {
     setEditId(null);
   };
 
-  // Filter and sort logic
+  // Filter and sort logic - only show transactions for current subaccount
   const filteredTransactions = useMemo(() => {
-    let filtered = [...transactions];
+    let filtered = transactions.filter((t) => t.subaccountid === subaccountId);
 
     if (searchTerm) {
       filtered = filtered.filter((t) =>
@@ -254,10 +260,13 @@ export default function TransactionsPage() {
 
     if (sortConfig !== null) {
       filtered.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const aValue = a[sortConfig.key as keyof Transaction];
+        const bValue = b[sortConfig.key as keyof Transaction];
+
+        if (aValue < bValue) {
           return sortConfig.direction === "ascending" ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aValue > bValue) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
@@ -265,7 +274,14 @@ export default function TransactionsPage() {
     }
 
     return filtered;
-  }, [transactions, searchTerm, filterType, filterCategory, sortConfig]);
+  }, [
+    transactions,
+    subaccountId,
+    searchTerm,
+    filterType,
+    filterCategory,
+    sortConfig,
+  ]);
 
   const requestSort = (key: string) => {
     let direction = "ascending";
@@ -327,19 +343,11 @@ export default function TransactionsPage() {
     }));
   }, [filteredTransactions]);
 
-  const chartData = useMemo(
-    () =>
-      filteredTransactions.map((t) => ({
-        name: t.title,
-        income: t.type === "income" ? t.amount : 0,
-        expense: t.type === "expense" ? t.amount : 0,
-        date: new Date(t.date).toLocaleDateString(),
-      })),
-    [filteredTransactions]
-  );
-
   const monthlyData = useMemo(() => {
-    const monthly: Record<string, { income: number; expense: number; month: string }> = {};
+    const monthly: Record<
+      string,
+      { income: number; expense: number; month: string }
+    > = {};
 
     filteredTransactions.forEach((t) => {
       const date = new Date(t.date);
@@ -379,8 +387,12 @@ export default function TransactionsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
-          <Select value={filterType} onValueChange={(val: "all" | "income" | "expense") => setFilterType(val)}>
+
+          <Select
+            value={filterType}
+            onValueChange={(val: "all" | "income" | "expense") =>
+              setFilterType(val)
+            }>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
@@ -390,23 +402,27 @@ export default function TransactionsPage() {
               <SelectItem value="expense">Expense</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val)}>
+
+          <Select
+            value={filterCategory}
+            onValueChange={(val) => setFilterCategory(val)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {CATEGORIES.map((cat) => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
+
           <Button variant="outline" size="icon" onClick={handleDownload}>
             <Download className="h-4 w-4" />
           </Button>
-          
+
           <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => resetForm()} className="rounded-xl">
@@ -418,7 +434,11 @@ export default function TransactionsPage() {
                 <DialogTitle>Add Transaction</DialogTitle>
               </DialogHeader>
               <Card className="p-4 space-y-4">
-                <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
                 <Input
                   placeholder="Amount"
                   type="number"
@@ -440,11 +460,17 @@ export default function TransactionsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <DatePicker selected={date} onSelect={setDate} />
+                <DatePicker
+                  selected={date}
+                  onChange={(date: Date) => setDate(date)}
+                  className="w-full p-2 border rounded-md"
+                />
                 <Button onClick={handleCreate} className="w-full">
                   Create
                 </Button>
@@ -460,7 +486,9 @@ export default function TransactionsPage() {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground">Total Income</p>
-              <p className="text-2xl font-bold text-green-600">${totalIncome.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">
+                ${totalIncome.toFixed(2)}
+              </p>
             </div>
             <div className="bg-green-100 dark:bg-green-800 p-3 rounded-full">
               <svg
@@ -473,19 +501,20 @@ export default function TransactionsPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-green-600 dark:text-green-300"
-              >
+                className="text-green-600 dark:text-green-300">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
               </svg>
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-6 rounded-xl bg-red-50 dark:bg-red-900/20">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground">Total Expense</p>
-              <p className="text-2xl font-bold text-red-600">${totalExpense.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-red-600">
+                ${totalExpense.toFixed(2)}
+              </p>
             </div>
             <div className="bg-red-100 dark:bg-red-800 p-3 rounded-full">
               <svg
@@ -498,23 +527,25 @@ export default function TransactionsPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-red-600 dark:text-red-300"
-              >
+                className="text-red-600 dark:text-red-300">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
               </svg>
             </div>
           </div>
         </Card>
-        
-        <Card className={`p-6 rounded-xl ${netBalance >= 0 ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}>
+
+        <Card
+          className={`p-6 rounded-xl ${netBalance >= 0 ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}>
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground">Net Balance</p>
-              <p className={`text-2xl font-bold ${netBalance >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <p
+                className={`text-2xl font-bold ${netBalance >= 0 ? "text-green-600" : "text-red-600"}`}>
                 ${netBalance.toFixed(2)}
               </p>
             </div>
-            <div className={`p-3 rounded-full ${netBalance >= 0 ? "bg-green-100 dark:bg-green-800" : "bg-red-100 dark:bg-red-800"}`}>
+            <div
+              className={`p-3 rounded-full ${netBalance >= 0 ? "bg-green-100 dark:bg-green-800" : "bg-red-100 dark:bg-red-800"}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -525,8 +556,11 @@ export default function TransactionsPage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={netBalance >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}
-              >
+                className={
+                  netBalance >= 0
+                    ? "text-green-600 dark:text-green-300"
+                    : "text-red-600 dark:text-red-300"
+                }>
                 <path d="M6 15h12M6 9h12" />
               </svg>
             </div>
@@ -555,7 +589,9 @@ export default function TransactionsPage() {
 
         {/* Income/Expense Distribution */}
         <Card className="p-6 rounded-xl">
-          <h2 className="text-xl font-semibold mb-4">Income/Expense Distribution</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Income/Expense Distribution
+          </h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -570,8 +606,9 @@ export default function TransactionsPage() {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }>
                   <Cell fill="#22c55e" />
                   <Cell fill="#ef4444" />
                 </Pie>
@@ -596,10 +633,14 @@ export default function TransactionsPage() {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }>
                   {incomeByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value) => `$${value}`} />
@@ -623,10 +664,14 @@ export default function TransactionsPage() {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }>
                   {expenseByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value) => `$${value}`} />
@@ -642,31 +687,41 @@ export default function TransactionsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[200px] cursor-pointer" onClick={() => requestSort("title")}>
+              <TableHead
+                className="w-[200px] cursor-pointer"
+                onClick={() => requestSort("title")}>
                 <div className="flex items-center">
                   Title
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => requestSort("amount")}>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => requestSort("amount")}>
                 <div className="flex items-center">
                   Amount
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => requestSort("type")}>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => requestSort("type")}>
                 <div className="flex items-center">
                   Type
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => requestSort("category")}>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => requestSort("category")}>
                 <div className="flex items-center">
                   Category
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => requestSort("date")}>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => requestSort("date")}>
                 <div className="flex items-center">
                   Date
                   <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -679,7 +734,10 @@ export default function TransactionsPage() {
             {currentItems.map((txn) => (
               <TableRow key={txn.id}>
                 <TableCell>{txn.title}</TableCell>
-                <TableCell className={txn.type === "income" ? "text-green-600" : "text-red-600"}>
+                <TableCell
+                  className={
+                    txn.type === "income" ? "text-green-600" : "text-red-600"
+                  }>
                   ${txn.amount.toFixed(2)}
                 </TableCell>
                 <TableCell className="capitalize">{txn.type}</TableCell>
@@ -697,15 +755,13 @@ export default function TransactionsPage() {
                       setCategory(txn.category || "");
                       setDate(new Date(txn.date));
                       setEditModalOpen(true);
-                    }}
-                  >
+                    }}>
                     Edit
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleDelete(txn.id)}
-                  >
+                    onClick={() => handleDelete(txn.id)}>
                     Delete
                   </Button>
                 </TableCell>
@@ -721,8 +777,15 @@ export default function TransactionsPage() {
           <div className="text-sm text-muted-foreground">
             Showing{" "}
             <strong>
-              {Math.min((currentPage - 1) * itemsPerPage + 1, filteredTransactions.length)}-
-              {Math.min(currentPage * itemsPerPage, filteredTransactions.length)}
+              {Math.min(
+                (currentPage - 1) * itemsPerPage + 1,
+                filteredTransactions.length
+              )}
+              -
+              {Math.min(
+                currentPage * itemsPerPage,
+                filteredTransactions.length
+              )}
             </strong>{" "}
             of <strong>{filteredTransactions.length}</strong> transactions
           </div>
@@ -730,24 +793,21 @@ export default function TransactionsPage() {
             <Button
               variant="outline"
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
+              onClick={() => setCurrentPage(currentPage - 1)}>
               Previous
             </Button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Button
                 key={page}
                 variant={currentPage === page ? "default" : "outline"}
-                onClick={() => setCurrentPage(page)}
-              >
+                onClick={() => setCurrentPage(page)}>
                 {page}
               </Button>
             ))}
             <Button
               variant="outline"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
+              onClick={() => setCurrentPage(currentPage + 1)}>
               Next
             </Button>
           </div>
@@ -787,11 +847,17 @@ export default function TransactionsPage() {
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <DatePicker selected={date} onSelect={setDate} />
+            <DatePicker
+              selected={date}
+              onChange={(date: Date) => setDate(date)}
+              className="w-full p-2 border rounded-md"
+            />
             <Button onClick={handleUpdate} className="w-full">
               Update
             </Button>

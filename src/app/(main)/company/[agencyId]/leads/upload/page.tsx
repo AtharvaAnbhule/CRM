@@ -46,7 +46,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { MessageCircle, Filter, X, Calendar, Plus, Bell } from "lucide-react";
+import {
+  MessageCircle,
+  Filter,
+  X,
+  Calendar,
+  Plus,
+  Bell,
+  Trash2,
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -65,7 +73,7 @@ interface Lead {
   status: "new" | "contacted" | "interested" | "qualified" | "unqualified";
   notes?: string;
   createdAt: Date;
-  updatedAt: Date; // Add this field
+  updatedAt: Date;
   followUpDate: Date | null;
   Notes: Note[];
 }
@@ -91,7 +99,7 @@ interface Filters {
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [allLeads, setAllLeads] = useState<Lead[]>([]); // Store all leads for filtering
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -121,6 +129,13 @@ export default function LeadsPage() {
   const { userId } = useAuth();
   const pathname = usePathname();
 
+  // New state variables for selection and deletion
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   // Initialize filters
   const [filters, setFilters] = useState<Filters>({
     status: "all",
@@ -140,21 +155,14 @@ export default function LeadsPage() {
 
   // Function to generate WhatsApp link
   const getWhatsAppLink = (phone: string, message: string = "") => {
-    // Clean phone number - remove non-digit characters
     const cleanedPhone = phone.replace(/\D/g, "");
-
-    // Encode message for URL
     const encodedMessage = encodeURIComponent(message);
-
     return `https://wa.me/${cleanedPhone}?text=${encodedMessage}`;
   };
 
   // Function to handle WhatsApp contact
   const handleWhatsAppContact = (lead: Lead) => {
-    // Create a default message
     const defaultMessage = `Hello ${lead.name}, I'm reaching out from our agency.`;
-
-    // Open WhatsApp with the pre-filled message
     window.open(getWhatsAppLink(lead.phone, defaultMessage), "_blank");
   };
 
@@ -189,7 +197,7 @@ export default function LeadsPage() {
     if (filters.dateRange.to) {
       filtered = filtered.filter((lead) => {
         const leadDate = new Date(lead.createdAt);
-        leadDate.setHours(23, 59, 59, 999); // End of day
+        leadDate.setHours(23, 59, 59, 999);
         return leadDate <= filters.dateRange.to!;
       });
     }
@@ -239,6 +247,8 @@ export default function LeadsPage() {
         const data = await response.json();
         setAllLeads(data.leads || []);
         setLeads(data.leads || []);
+        // Clear selection when refreshing leads
+        setSelectedLeads(new Set());
       } else {
         throw new Error("Failed to fetch leads");
       }
@@ -320,18 +330,15 @@ export default function LeadsPage() {
     formData.append("agencyId", agencyId);
 
     try {
-      // In a real app, you would upload to your API endpoint
-      // For demo purposes, we'll simulate parsing a CSV
       const text = await readFileAsText(file);
       const parsedLeads = parseCSV(text);
 
-      // Add temporary IDs and status for demo
       const leadsWithIds = parsedLeads.map((lead, index) => ({
         ...lead,
         id: `temp-${index}`,
         status: "new" as const,
         createdAt: new Date(),
-        updatedAt: new Date(), // Add this field
+        updatedAt: new Date(),
         followUpDate: null,
         Notes: [],
       }));
@@ -398,9 +405,7 @@ export default function LeadsPage() {
         const data = await response.json();
         alert("Leads saved successfully!");
         setLeads([]);
-        // Refresh the existing leads list
         fetchAllLeads();
-        // Switch to the list tab
         setActiveTab("list");
       } else {
         throw new Error("Failed to save leads");
@@ -427,7 +432,6 @@ export default function LeadsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === id
@@ -440,7 +444,6 @@ export default function LeadsPage() {
           )
         );
 
-        // Update in selected lead if it's the one being edited
         if (selectedLead && selectedLead.id === id) {
           setSelectedLead({
             ...selectedLead,
@@ -476,7 +479,6 @@ export default function LeadsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === id
@@ -489,7 +491,6 @@ export default function LeadsPage() {
           )
         );
 
-        // Update in selected lead if it's the one being edited
         if (selectedLead && selectedLead.id === id) {
           setSelectedLead({
             ...selectedLead,
@@ -531,14 +532,12 @@ export default function LeadsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update the selected lead with the new note
         setSelectedLead({
           ...selectedLead,
           Notes: [data.note, ...selectedLead.Notes],
-          updatedAt: new Date(), // Update the updatedAt field
+          updatedAt: new Date(),
         });
 
-        // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === selectedLead.id
@@ -550,7 +549,6 @@ export default function LeadsPage() {
           )
         );
 
-        // Clear the form
         setNewNote({ message: "", behavior: "" });
         alert("Note added successfully!");
       } else {
@@ -597,16 +595,14 @@ export default function LeadsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Update in selected lead
         setSelectedLead({
           ...selectedLead,
           Notes: selectedLead.Notes.map((note) =>
             note.id === editingNote.id ? data.note : note
           ),
-          updatedAt: new Date(), // Update the updatedAt field
+          updatedAt: new Date(),
         });
 
-        // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === selectedLead.id
@@ -644,14 +640,12 @@ export default function LeadsPage() {
       );
 
       if (response.ok) {
-        // Update in selected lead
         setSelectedLead({
           ...selectedLead,
           Notes: selectedLead.Notes.filter((note) => note.id !== noteId),
-          updatedAt: new Date(), // Update the updatedAt field
+          updatedAt: new Date(),
         });
 
-        // Update in all leads
         setAllLeads((prev) =>
           prev.map((lead) =>
             lead.id === selectedLead.id
@@ -672,6 +666,98 @@ export default function LeadsPage() {
       console.error("Error deleting note:", error);
       alert("Error deleting note. Please try again.");
     }
+  };
+
+  // Delete a single lead
+  const deleteLead = async (leadId: string) => {
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/agencies/${agencyId}/lead/${leadId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setAllLeads((prev) => prev.filter((lead) => lead.id !== leadId));
+
+        setSelectedLeads((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(leadId);
+          return newSet;
+        });
+
+        if (selectedLead && selectedLead.id === leadId) {
+          setIsDrawerOpen(false);
+        }
+
+        alert("Lead deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete lead");
+      }
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+      alert("Error deleting lead. Please try again.");
+    } finally {
+      setDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setLeadToDelete(null);
+    }
+  };
+
+  // Delete multiple leads
+  const deleteSelectedLeads = async () => {
+    if (selectedLeads.size === 0) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/agencies/${agencyId}/lead/bulk`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ leadIds: Array.from(selectedLeads) }),
+      });
+
+      if (response.ok) {
+        setAllLeads((prev) =>
+          prev.filter((lead) => !selectedLeads.has(lead.id))
+        );
+        setSelectedLeads(new Set());
+        alert(`${selectedLeads.size} lead(s) deleted successfully!`);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete leads");
+      }
+    } catch (error) {
+      console.error("Error deleting leads:", error);
+      alert("Error deleting leads. Please try again.");
+    } finally {
+      setDeleting(false);
+      setIsBulkDeleteDialogOpen(false);
+    }
+  };
+
+  // Toggle selection of a single lead
+  const toggleLeadSelection = (leadId: string) => {
+    setSelectedLeads((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId);
+      } else {
+        newSet.add(leadId);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all visible leads
+  const selectAllLeads = () => {
+    setSelectedLeads(new Set(leads.map((lead) => lead.id)));
+  };
+
+  // Clear all selections
+  const clearSelections = () => {
+    setSelectedLeads(new Set());
   };
 
   // Handle filter changes
@@ -746,7 +832,7 @@ export default function LeadsPage() {
               status: newLead.status,
               followUpDate: newLead.followUpDate,
               createdAt: new Date(),
-              updatedAt: new Date(), // Add this field
+              updatedAt: new Date(),
             },
           ],
           userId,
@@ -764,7 +850,6 @@ export default function LeadsPage() {
           status: "new",
           followUpDate: null,
         });
-        // Refresh the leads list
         fetchAllLeads();
       } else {
         const errorData = await response.json();
@@ -1148,6 +1233,38 @@ export default function LeadsPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Selection Controls */}
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <h4 className="font-semibold mb-2">Selection Controls</h4>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={selectAllLeads}
+                          disabled={leads.length === 0}>
+                          Select All ({leads.length})
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={clearSelections}
+                          disabled={selectedLeads.size === 0}>
+                          Clear Selection ({selectedLeads.size})
+                        </Button>
+                        {selectedLeads.size > 0 && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setIsBulkDeleteDialogOpen(true)}
+                            disabled={deleting}>
+                            {deleting
+                              ? "Deleting..."
+                              : `Delete Selected (${selectedLeads.size})`}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardHeader>
@@ -1155,6 +1272,8 @@ export default function LeadsPage() {
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-sm text-muted-foreground">
                     Showing {leads.length} of {allLeads.length} leads
+                    {selectedLeads.size > 0 &&
+                      `, ${selectedLeads.size} selected`}
                   </p>
                   {hasActiveFilters() && (
                     <Button
@@ -1172,6 +1291,23 @@ export default function LeadsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          <input
+                            type="checkbox"
+                            checked={
+                              selectedLeads.size === leads.length &&
+                              leads.length > 0
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                selectAllLeads();
+                              } else {
+                                clearSelections();
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                        </TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
@@ -1185,8 +1321,22 @@ export default function LeadsPage() {
                       {leads.map((lead) => (
                         <TableRow
                           key={lead.id}
-                          className="cursor-pointer hover:bg-gray-700"
+                          className={cn(
+                            "cursor-pointer hover:bg-gray-700",
+                            selectedLeads.has(lead.id) && "bg-gray-800"
+                          )}
                           onClick={() => fetchLeadDetails(lead.id)}>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedLeads.has(lead.id)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleLeadSelection(lead.id);
+                              }}
+                              className="h-4 w-4"
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {lead.name}
                           </TableCell>
@@ -1239,6 +1389,17 @@ export default function LeadsPage() {
                                 className="bg-green-600 hover:bg-green-700 text-white">
                                 <MessageCircle className="h-4 w-4 mr-1" />
                                 WhatsApp
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLeadToDelete(lead.id);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                                className="bg-red-600 hover:bg-red-700">
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
@@ -1409,6 +1570,16 @@ export default function LeadsPage() {
                       className="bg-green-600 hover:bg-green-700 text-white">
                       <MessageCircle className="h-4 w-4 mr-1" />
                       WhatsApp
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        setLeadToDelete(selectedLead.id);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                      className="bg-red-600 hover:bg-red-700">
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete Lead
                     </Button>
                   </div>
 
@@ -1658,6 +1829,62 @@ export default function LeadsPage() {
               </Button>
               <Button onClick={createLeadManually} disabled={creatingLead}>
                 {creatingLead ? "Creating..." : "Create Lead"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this lead? This action cannot be
+                undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => leadToDelete && deleteLead(leadToDelete)}
+                disabled={deleting}>
+                {deleting ? "Deleting..." : "Delete Lead"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <Dialog
+          open={isBulkDeleteDialogOpen}
+          onOpenChange={setIsBulkDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete {selectedLeads.size} selected
+                lead(s)? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsBulkDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={deleteSelectedLeads}
+                disabled={deleting}>
+                {deleting
+                  ? "Deleting..."
+                  : `Delete ${selectedLeads.size} Lead(s)`}
               </Button>
             </DialogFooter>
           </DialogContent>
