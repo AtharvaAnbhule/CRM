@@ -54,6 +54,8 @@ import {
   Plus,
   Bell,
   Trash2,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import {
   Popover,
@@ -1325,21 +1327,21 @@ export default function LeadsPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedLeads.size === leads.length &&
-                              leads.length > 0
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                selectAllLeads();
-                              } else {
+                          <div
+                            className="flex items-center justify-center cursor-pointer"
+                            onClick={() => {
+                              if (selectedLeads.size === leads.length) {
                                 clearSelections();
+                              } else {
+                                selectAllLeads();
                               }
-                            }}
-                            className="h-4 w-4"
-                          />
+                            }}>
+                            {selectedLeads.size === leads.length ? (
+                              <CheckSquare className="h-4 w-4" />
+                            ) : (
+                              <Square className="h-4 w-4" />
+                            )}
+                          </div>
                         </TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
@@ -1360,15 +1362,15 @@ export default function LeadsPage() {
                           )}
                           onClick={() => fetchLeadDetails(lead.id)}>
                           <TableCell onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={selectedLeads.has(lead.id)}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                toggleLeadSelection(lead.id);
-                              }}
-                              className="h-4 w-4"
-                            />
+                            <div
+                              className="flex items-center justify-center cursor-pointer"
+                              onClick={() => toggleLeadSelection(lead.id)}>
+                              {selectedLeads.has(lead.id) ? (
+                                <CheckSquare className="h-4 w-4" />
+                              ) : (
+                                <Square className="h-4 w-4" />
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="font-medium">
                             {lead.name}

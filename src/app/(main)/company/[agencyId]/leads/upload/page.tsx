@@ -1255,7 +1255,7 @@ export default function LeadsPage() {
                         {selectedLeads.size > 0 && (
                           <Button
                             variant="destructive"
-                            size="sm"
+                            size="lg"
                             onClick={() => setIsBulkDeleteDialogOpen(true)}
                             disabled={deleting}>
                             {deleting
