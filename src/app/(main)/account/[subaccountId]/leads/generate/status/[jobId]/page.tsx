@@ -18,6 +18,8 @@ import {
   Mail,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
+  Lock,
 } from "lucide-react";
 
 interface Lead {
@@ -43,8 +45,18 @@ export default function JobStatusPage() {
   const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [isSavingPrivate, setIsSavingPrivate] = useState(false);
+  const [savePrivateError, setSavePrivateError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [leadsPerPage] = useState(10);
+  const [subaccountId, setSubaccountId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Extract subaccountId from URL
+    const pathParts = window.location.pathname.split("/");
+    const subaccountIdFromUrl = pathParts[2]; // Assuming URL pattern: /subaccount/[subaccountId]/leads/...
+    setSubaccountId(subaccountIdFromUrl);
+  }, []);
 
   useEffect(() => {
     if (!jobId) return;
@@ -93,6 +105,76 @@ export default function JobStatusPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSaveToPrivate = async () => {
+    if (selectedLeads.length === 0 || !subaccountId) return;
+
+    setIsSavingPrivate(true);
+    setSavePrivateError("");
+
+    try {
+      const response = await fetch(
+        `/api/accounts/${subaccountId}/lead/upload/auto`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leads: selectedLeads }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to save leads to private database"
+        );
+      }
+
+      const result = await response.json();
+      alert(
+        `Successfully saved ${result.count} leads to your private database!`
+      );
+    } catch (error) {
+      setSavePrivateError(
+        error instanceof Error
+          ? error.message
+          : "Failed to save leads to private database"
+      );
+    } finally {
+      setIsSavingPrivate(false);
+    }
+  };
+
+  const handleWhatsAppLeads = () => {
+    if (selectedLeads.length === 0) return;
+
+    // Filter leads that have phone numbers
+    const leadsWithPhone = selectedLeads.filter(
+      (lead) => lead.phone && lead.phone.trim() !== ""
+    );
+
+    if (leadsWithPhone.length === 0) {
+      alert("No selected leads have phone numbers to message on WhatsApp.");
+      return;
+    }
+
+    // Create WhatsApp message links for each lead
+    const whatsappLinks = leadsWithPhone.map((lead) => {
+      const message = `Hello ${lead.name}, I came across your ${lead.Category} business and would like to connect.`;
+      const encodedMessage = encodeURIComponent(message);
+      const phone = lead.phone.replace(/\D/g, ""); // Remove non-digit characters
+      return `https://wa.me/${phone}?text=${encodedMessage}`;
+    });
+
+    // Open the first WhatsApp chat and others in new tabs
+    window.open(whatsappLinks[0], "_blank");
+
+    // Open remaining links in new tabs (with a slight delay to avoid popup blockers)
+    for (let i = 1; i < whatsappLinks.length; i++) {
+      setTimeout(() => {
+        window.open(whatsappLinks[i], "_blank");
+      }, 100 * i);
     }
   };
 
@@ -249,6 +331,9 @@ export default function JobStatusPage() {
                         <th className="p-3 text-left font-medium text-sm">
                           Email
                         </th>
+                        <th className="p-3 text-left font-medium text-sm">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -256,6 +341,8 @@ export default function JobStatusPage() {
                         const isSelected = selectedLeads.some(
                           (l) => l.name === lead.name && l.phone === lead.phone
                         );
+                        const hasPhone = lead.phone && lead.phone.trim() !== "";
+
                         return (
                           <tr
                             key={index}
@@ -305,6 +392,30 @@ export default function JobStatusPage() {
                                 <span className="text-muted-foreground">
                                   N/A
                                 </span>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {hasPhone && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const message = `Hello ${lead.name}, I came across your ${lead.Category} business and would like to connect.`;
+                                    const encodedMessage =
+                                      encodeURIComponent(message);
+                                    const phone = lead?.phone.replace(
+                                      /\D/g,
+                                      ""
+                                    );
+                                    window.open(
+                                      `https://wa.me/${phone}?text=${encodedMessage}`,
+                                      "_blank"
+                                    );
+                                  }}
+                                  className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">
+                                  <MessageCircle className="h-4 w-4 mr-1" />
+                                  WhatsApp
+                                </Button>
                               )}
                             </td>
                           </tr>
@@ -360,6 +471,24 @@ export default function JobStatusPage() {
                 Select All
               </Button>
               <Button
+                onClick={handleWhatsAppLeads}
+                disabled={
+                  selectedLeads.length === 0 ||
+                  selectedLeads.filter(
+                    (lead) => lead.phone && lead.phone.trim() !== ""
+                  ).length === 0
+                }
+                className="bg-green-600 hover:bg-green-700">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                WhatsApp Selected (
+                {
+                  selectedLeads.filter(
+                    (lead) => lead.phone && lead.phone.trim() !== ""
+                  ).length
+                }
+                )
+              </Button>
+              <Button
                 onClick={handleSaveLeads}
                 disabled={selectedLeads.length === 0 || isSaving}
                 className="bg-primary hover:bg-primary/90">
@@ -375,11 +504,35 @@ export default function JobStatusPage() {
                   </>
                 )}
               </Button>
+              <Button
+                onClick={handleSaveToPrivate}
+                disabled={
+                  selectedLeads.length === 0 || isSavingPrivate || !subaccountId
+                }
+                className="bg-purple-600 hover:bg-purple-700">
+                {isSavingPrivate ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving to Private...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" />
+                    Save to Private ({selectedLeads.length})
+                  </>
+                )}
+              </Button>
             </div>
 
             {saveError && (
               <div className="mt-4 p-3 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm">
                 {saveError}
+              </div>
+            )}
+
+            {savePrivateError && (
+              <div className="mt-4 p-3 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm">
+                {savePrivateError}
               </div>
             )}
           </>

@@ -15,7 +15,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = async ({ id, type }) => {
   const user = await getAuthUserDetails();
-  
 
   if (!user || !user.agency) return null;
 
@@ -57,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = async ({ id, type }) => {
   );
 
   return (
-     <div className="w-full">
+    <div className="w-full">
       {/* Mobile Sidebar */}
       <div className="block md:hidden">
         <MenuOptions
