@@ -309,12 +309,14 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
                               pathname === option.link,
                           }
                         )}>
-                        <Link
-                          href={option.link}
-                          className="flex items-center gap-2 rounded-md w-full">
-                          {value}
-                          <span> {option.name} </span>
-                        </Link>
+                        <SheetClose asChild>
+                          <Link
+                            href={option.link}
+                            className="flex items-center gap-2 rounded-md w-full">
+                            {value}
+                            <span> {option.name} </span>
+                          </Link>
+                        </SheetClose>
                       </CommandItem>
                     );
                   })}
@@ -328,234 +330,256 @@ const MenuOptions: React.FC<MenuOptionsProps> = ({
             <Separator className="mb-4 border-gray-300 dark:border-gray-600" />
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/feedback`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <MessageSquareQuote />
-                  <span> Feedback </span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/feedback`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <MessageSquareQuote />
+                    <span> Feedback </span>
+                  </Button>
+                </SheetClose>
               </>
             )}
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/email-marketing`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <SendIcon />
-                  <span> Email-marketing </span>
-                </Button>
-              </>
-            )}
-
-            {!window.location.pathname.includes("account") && (
-              <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
-
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/Meeting`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <MessageSquareTextIcon />
-                  <span> Meetings </span>
-                </Button>
-              </>
-            )}
-            {!window.location.pathname.includes("account") && (
-              <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
-
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/Event`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <FerrisWheel />
-                  <span> Organize Events </span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/email-marketing`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <SendIcon />
+                    <span> Email-marketing </span>
+                  </Button>
+                </SheetClose>
               </>
             )}
 
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/invoices`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <Receipt />
-                  <span> Generate Invoices</span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/Meeting`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <MessageSquareTextIcon />
+                    <span> Meetings </span>
+                  </Button>
+                </SheetClose>
               </>
             )}
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/goals`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <HelpCircle />
-                  <span> Micro Helps</span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/Event`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <FerrisWheel />
+                    <span> Organize Events </span>
+                  </Button>
+                </SheetClose>
+              </>
+            )}
+
+            {!window.location.pathname.includes("account") && (
+              <>
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
+
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/invoices`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <Receipt />
+                    <span> Generate Invoices</span>
+                  </Button>
+                </SheetClose>
               </>
             )}
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/smart`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <PlaneTakeoffIcon />
-                  <span> Smart Personas</span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/goals`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <HelpCircle />
+                    <span> Micro Helps</span>
+                  </Button>
+                </SheetClose>
               </>
             )}
             {!window.location.pathname.includes("account") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("company");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/company/${agencyId}/followup`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <FolderClock />
-                  <span> AI FollowUp</span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/smart`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <PlaneTakeoffIcon />
+                    <span> Smart Personas</span>
+                  </Button>
+                </SheetClose>
+              </>
+            )}
+            {!window.location.pathname.includes("account") && (
+              <>
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("company");
+
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/company/${agencyId}/followup`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <FolderClock />
+                    <span> AI FollowUp</span>
+                  </Button>
+                </SheetClose>
               </>
             )}
 
             {!window.location.pathname.includes("company") && (
               <>
-                <Button
-                  onClick={() => {
-                    const pathname = window.location.pathname;
-                    const pathSegments = pathname.split("/");
-                    const agencyIndex = pathSegments.indexOf("account");
+                <SheetClose asChild>
+                  <Button
+                    onClick={() => {
+                      const pathname = window.location.pathname;
+                      const pathSegments = pathname.split("/");
+                      const agencyIndex = pathSegments.indexOf("account");
 
-                    if (
-                      agencyIndex !== -1 &&
-                      pathSegments.length > agencyIndex + 1
-                    ) {
-                      const agencyId = pathSegments[agencyIndex + 1];
-                      router.push(`/account/${agencyId}/leads`);
-                    }
-                  }}
-                  variant="ghost"
-                  className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-                  <PanelsTopLeftIcon />
-                  <span>Leads</span>
-                </Button>
+                      if (
+                        agencyIndex !== -1 &&
+                        pathSegments.length > agencyIndex + 1
+                      ) {
+                        const agencyId = pathSegments[agencyIndex + 1];
+                        router.push(`/account/${agencyId}/leads`);
+                      }
+                    }}
+                    variant="ghost"
+                    className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                    <PanelsTopLeftIcon />
+                    <span>Leads</span>
+                  </Button>
+                </SheetClose>
               </>
             )}
 
-            <Button
-              variant="ghost"
-              //@ts-ignore
-              onClick={() => signOut({ redirectUrl: "/" })}
-              className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
-              <LogOut />
-              <span> Logout </span>
-            </Button>
-            <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r bottom-3 from-pink-400 to-purple-600 rounded-2xl shadow-lg text-white mx-auto">
-              <h2 className="text-lg font-semibold text-center">
-                Upgrade to <span className="font-bold"> PRO </span> to get
-                access to all Features!
-              </h2>
-              <button
-                className="mt-4 px-6 py-3 bg-white text-purple-700 font-semibold rounded-full shadow-md hover:bg-gray-100 transition duration-300"
-                onClick={() => router.push(`/company/${agencyId}/billing`)}>
-                Get Pro Now!
-              </button>
-            </div>
+            <SheetClose asChild>
+              <Button
+                variant="ghost"
+                //@ts-ignore
+                onClick={() => signOut({ redirectUrl: "/" })}
+                className="w-full flex items-center justify-start gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 py-3">
+                <LogOut />
+                <span> Logout </span>
+              </Button>
+            </SheetClose>
+            <SheetClose asChild>
+              <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r bottom-3 from-pink-400 to-purple-600 rounded-2xl shadow-lg text-white mx-auto">
+                <h2 className="text-lg font-semibold text-center">
+                  Upgrade to <span className="font-bold"> PRO </span> to get
+                  access to all Features!
+                </h2>
+                <button
+                  className="mt-4 px-6 py-3 bg-white text-purple-700 font-semibold rounded-full shadow-md hover:bg-gray-100 transition duration-300"
+                  onClick={() => router.push(`/company/${agencyId}/billing`)}>
+                  Get Pro Now!
+                </button>
+              </div>
+            </SheetClose>
           </div>
         </div>
       </SheetContent>

@@ -1066,7 +1066,7 @@ export default function LeadsPage() {
                       View and manage all leads for your agency.
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 md:flex-row flex-col">
                     <Button
                       onClick={() => setShowFilters(!showFilters)}
                       variant="outline"
@@ -1237,7 +1237,7 @@ export default function LeadsPage() {
                     {/* Selection Controls */}
                     <div className="mt-4 pt-4 border-t border-gray-700">
                       <h4 className="font-semibold mb-2">Selection Controls</h4>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 md:flex-row flex-col">
                         <Button
                           variant="outline"
                           size="sm"
@@ -1430,6 +1430,7 @@ export default function LeadsPage() {
                         ? "Try adjusting your filters or clear them to see all leads."
                         : "Get started by uploading leads or click refresh to check for existing leads."}
                     </p>
+
                     {hasActiveFilters() ? (
                       <Button onClick={clearFilters} className="mt-4">
                         Clear Filters
