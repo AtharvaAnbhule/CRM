@@ -2,5 +2,5 @@
 
 User-agent: *
 Allow: /
-Disallow: /company/sign-in
+Disallow: ["/company/sign-in","/company/sign-up"]
 
