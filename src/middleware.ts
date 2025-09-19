@@ -44,13 +44,13 @@ export default authMiddleware({
       return NextResponse.rewrite(new URL("/site", req.url));
     }
 
-    if (
-      url.pathname.startsWith("/company") ||
-      url.pathname.startsWith("/account") ||
-      url.pathname.startsWith("/payment-successfull")
-    ) {
-      return NextResponse.rewrite(new URL(`${pathWithSearchParams}`, req.url));
-    }
+   if (
+  (url.pathname.startsWith("/company/") && url.pathname !== "/company") ||
+  url.pathname.startsWith("/account") ||
+  url.pathname.startsWith("/payment-successfull")
+) {
+  return NextResponse.rewrite(new URL(`${pathWithSearchParams}`, req.url));
+}
   },
 });
 
