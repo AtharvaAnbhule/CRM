@@ -8,6 +8,7 @@ export default authMiddleware({
   publicRoutes: ["/site", "/api/uploadthing","/robots.txt","/","/company/sign-in","/About",
   "/Services",
   "/company",
+                 "/leads",
   "/Features"],
   async beforeAuth(auth, req) {},
   async afterAuth(auth, req) {
