@@ -2,6 +2,5 @@ User-agent: *
 Disallow: /
 Allow: /About
 Allow: /leads
-Allow: /company
 Allow: /Services
 Allow: /Features
