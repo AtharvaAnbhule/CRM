@@ -1,6 +1,7 @@
-
-
 User-agent: *
-Allow: /
-Disallow: ["/company/sign-in","/company/sign-up"]
-
+Disallow: /
+Allow: /About
+Allow: /leads
+Allow: /company
+Allow: /Services
+Allow: /Features
