@@ -1,6 +1,8 @@
-import React from "react";
-import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { Role } from "@prisma/client";
 
 import { verifyInvintation } from "@/queries/invitation";
@@ -16,39 +18,59 @@ interface AgencyIdLayoutProps extends React.PropsWithChildren {
   };
 }
 
-const AgencyIdLayout: React.FC<AgencyIdLayoutProps> = async ({
-  params,
-  children,
-}) => {
-  const user = await currentUser();
-  const agencyId = await verifyInvintation();
+const AgencyIdLayout: React.FC<AgencyIdLayoutProps> = ({ params, children }) => {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  if (!user) redirect("/");
-  if (!agencyId || !params.agencyId) redirect("/company");
+  useEffect(() => {
+    const init = async () => {
+      if (isLoaded) {
+        if (!isSignedIn) {
+          router.push("/company/sign-in");
+        } else {
+          // verify agency and fetch notifications
+          const agencyId = await verifyInvintation();
+          if (!agencyId || !params.agencyId) {
+            router.push("/company");
+            return;
+          }
 
-  if (
-    user.privateMetadata.role !== Role.AGENCY_OWNER &&
-    user.privateMetadata.role !== Role.AGENCY_ADMIN
-  ) {
-    redirect("/company/unauthorized");
-  }
+          if (
+            user?.privateMetadata.role !== Role.AGENCY_OWNER &&
+            user?.privateMetadata.role !== Role.AGENCY_ADMIN
+          ) {
+            router.push("/company/unauthorized");
+            return;
+          }
 
-  const notifications = await getNotification(agencyId);
+          const noti = await getNotification(agencyId);
+          setNotifications(noti);
+          setReady(true); // everything loaded, render children
+        }
+      }
+    };
+
+    init();
+  }, [isLoaded, isSignedIn, router, params.agencyId, user]);
+
+  if (!ready) return null; // wait until session & data are loaded
 
   return (
-    <div className= "h-screen overflow-hidden" >
-    <Sidebar id={ params.agencyId } type = "agency" />
-      <div className="md:pl-[300px]" >
+    <div className="h-screen overflow-hidden">
+      <Sidebar id={params.agencyId} type="agency" />
+      <div className="md:pl-[300px]">
         <InfoBar
-          notifications={ notifications }
-  subAccountId = { user.id }
-  role = { user.privateMetadata.role }
-    />
-    <div className="relative" >
-      <BlurPage>{ children } </BlurPage>
+          notifications={notifications}
+          subAccountId={user?.id}
+          role={user?.privateMetadata.role}
+        />
+        <div className="relative">
+          <BlurPage>{children}</BlurPage>
+        </div>
       </div>
-      </div>
-      </div>
+    </div>
   );
 };
 
