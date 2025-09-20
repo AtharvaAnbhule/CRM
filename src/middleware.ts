@@ -15,10 +15,7 @@ export default authMiddleware({
     //rewrite for domains
     const url = req.nextUrl; 
 
-     if (url.hostname === "www.workeloo.com") {
-    url.hostname = "workeloo.com";
-    return NextResponse.redirect(url);
-  } 
+
     const searchParams = url.searchParams.toString();
     let hostname = req.headers;
 
