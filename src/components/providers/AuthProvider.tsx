@@ -12,8 +12,7 @@ const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <ClerkProvider 
       appearance={{ baseTheme: theme === "dark" ? darkTheme : undefined }} 
-       frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
-  publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+
     >
       {children}
     </ClerkProvider>
