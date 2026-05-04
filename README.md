@@ -79,25 +79,27 @@ External APIs (Zepto Mail, GetStream)
 git clone https://github.com/AtharvaAnbhule/workeloo-crm.git
 cd workeloo-crm
 
-
-2. Install Dependencies
+```
+### **2. Install Dependencies**
+```
 npm install
-
-3. Configure Environment
+```
+### **3. Configure Environment**
 
 Create a .env file (or use .env.example):
-
+```
 DATABASE_URL=postgresql://user:password@localhost:5432/workeloo
 JWT_SECRET=your_jwt_secret
 CLERK_API_KEY=your_clerk_key
 KAFKA_BROKER=localhost:9092
 ZEPTO_MAIL_KEY=your_zepto_key
 GETSTREAM_API_KEY=your_getstream_key
-
-4. Run Services
+``
+### **4. Run Services**
+```
 npm run dev
 
-
+```
 Backend services (Node.js & Spring Boot) can be started separately via Docker Compose.
 
 🧱 Database & APIs
