@@ -118,9 +118,9 @@ Endpoint	Description
 /api/ai-suggestions	Generate AI follow-up recommendations
 🚀 Deployment
 
-Frontend: Render
+Frontend: Next.js, React.js, Tailwind UI
 
-Backend: Render
+Backend: Node.js, Spring boot, PrismaORM
 
 Database: Neon(PostgreSQL)
 
