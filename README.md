@@ -94,7 +94,7 @@ CLERK_API_KEY=your_clerk_key
 KAFKA_BROKER=localhost:9092
 ZEPTO_MAIL_KEY=your_zepto_key
 GETSTREAM_API_KEY=your_getstream_key
-``
+```
 ### **4. Run Services**
 ```
 npm run dev
