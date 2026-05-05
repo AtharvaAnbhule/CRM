@@ -102,7 +102,7 @@ npm run dev
 ```
 Backend services (Node.js & Spring Boot) can be started separately via Docker Compose.
 
-🧱 Database & APIs
+### **🧱 Database & APIs**
 
 Core Models:
 User, Agency, Employee, Lead, Project, Workflow, Meeting, Event, Contact, Note, MediaFile
@@ -128,7 +128,7 @@ Event Streaming: Confluent Cloud (Kafka)
 
 CI/CD: GitHub Actions for automated builds and tests
 
-📈 Impact & Metrics
+### **📈 Impact & Metrics**
 
 Increased productivity by 45% through automation and unified dashboards
 
@@ -138,7 +138,7 @@ Supports 10K+ active clients and 500+ concurrent users in real time
 
 Scalable event-driven architecture powered by Apache Kafka
 
-🧠 Future Enhancements
+### **🧠 Future Enhancements**
 
 Integrate AI voice assistant for follow-ups
 
